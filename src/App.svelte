@@ -20,7 +20,7 @@
 
     // parse data
     let awardsData = []
-	d3.csv("src/dataset/IIS awards.csv", parseData)
+	d3.csv("/dataset/IIS awards.csv", parseData)
 		.then(res => awardsData = res)
 
     function parseData(d){
@@ -39,9 +39,7 @@
     let searchTerm = ""
     let searchedResults
     $: console.log({searchTerm})
-    $: console.log(searchTerm.toLowerCase().split(' '))
 
-    
     $: if (searchTerm === "") {
         searchedResults = awardsData
     } 
