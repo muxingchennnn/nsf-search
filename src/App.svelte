@@ -19,7 +19,7 @@
 
     // parse data
     let awardsData = []
-	d3.csv("src/dataset/sample data 5.csv", parseData)
+	d3.csv("src/dataset/IIS awards.csv", parseData)
 		.then(res => awardsData = res)
 
     function parseData(d){
