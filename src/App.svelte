@@ -4,7 +4,8 @@
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
-    import {onMount} from "svelte"
+    // import {onMount} from "svelte"
+    import { removeStopwords } from 'stopword'
 
     
     // let awardsData = []
@@ -45,10 +46,13 @@
         searchedResults = awardsData
     } 
     else {
-        // split the searchTerm into tokens when it is a long string and use tokens as terms
-        const resultFiltered = searchTerm.toLowerCase().split(' ').reduce((acc, term)=>{
+        // First, split the searchTerm into tokens in an array when it is a long string
+        // After that, use removeStopwords() to remove the stop words in that array
+        // Lastly. loop through the token array to filter results that include the tokens in title or abstract
+        const searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' '))
+        const resultFiltered = searchTermProcessed.reduce((acc, term)=>{
             const subset = awardsData.filter((result) =>
-                    // keep results with the search term in the title or abstract
+                    // filter results with the search term in the title or abstract
                     result.title.toLowerCase().includes(term) || 
                     result.abstract.toLowerCase().includes(term) 
             )
@@ -56,40 +60,8 @@
         }, [])
         // remove duplicates
         searchedResults = Array.from(new Set(resultFiltered))
-        
-
-
-        // const result = searchTerm.toLowerCase().split(' ').forEach((term)=>{
-        //     awardsData.filter((result) =>{
-        //         return (
-        //             // keep results with the search term in the title or abstract
-        //             result.title.toLowerCase().includes(term) || 
-        //             result.abstract.toLowerCase().includes(term)
-        //         )
-        //     })
-        // })
     }
     
-
-    // $: searchedResults = awardsData.filter((result) =>{
-    //     if (searchTerm === ""){
-    //         return (
-    //             // keep results with the search term in the title or abstract
-    //             result.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    //             result.abstract.toLowerCase().includes(searchTerm.toLowerCase())
-    //         )
-    //     } else{
-    //         searchTerm.split(' ').forEcah((term)=>{
-    //             return (
-    //                 // keep results with the search term in the title or abstract
-    //                 result.title.toLowerCase().includes(term) || 
-    //                 result.abstract.toLowerCase().includes(term)
-    //             )
-    //         })
-    //     }
-    // })
-    // $: console.log(searchedResults)
-
 
     // add pagination
     $: items = searchedResults
