@@ -45,10 +45,7 @@
         return text;
     }
 
-    // Function to remove highlight keywords in a text
-    function removeHighlight(text) {
-        return text.replace(/<span class="highlight" style="background-color: rgba\(250, 197, 21, 0.2\)">([^<]*)<\/span>/gi, '$1');
-    }
+    
 
     // search/filter results
     let searchTerm = ""
@@ -80,8 +77,6 @@
         searchedResults = Array.from(new Set(resultFiltered))
 
         keywordHighlighted = searchedResults.map(result =>{
-            result.title = removeHighlight(result.title)
-            result.abstract = removeHighlight(result.abstract)
             result.title = highlightKeywords(result.title, searchTermProcessed)
             result.abstract = highlightKeywords(result.abstract, searchTermProcessed)
     
@@ -101,7 +96,7 @@
 
 </script>
 
-<Header bind:searchTerm/>
+<Header bind:searchTerm bind:searchedResults/>
 
 <main class="container">
     <div class="results">

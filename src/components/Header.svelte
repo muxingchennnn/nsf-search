@@ -1,17 +1,31 @@
 <script>
     export let searchTerm
+    export let searchedResults
     let textInput=""
+
+    // Function to remove highlight keywords in a text
+    function removeHighlight(text) {
+        return text.replace(/<span class="highlight" style="background-color: rgba\(250, 197, 21, 0.2\)">([^<]*)<\/span>/gi, '$1');
+    }
 
     function clickSearch() {
         searchTerm = textInput
+        searchedResults.map(result =>{
+            result.title = removeHighlight(result.title)
+            result.abstract = removeHighlight(result.abstract)
+        })
     }
 
     function pressEnter(event) {
-    // Check if the 'return' key was pressed
-    if (event.key === "Enter") {
-      searchTerm = textInput
+        // Check if the 'return' key was pressed
+        if (event.key === "Enter") {
+        searchTerm = textInput
+        }
+        searchedResults.map(result =>{
+            result.title = removeHighlight(result.title)
+            result.abstract = removeHighlight(result.abstract)
+        })
     }
-  }
 </script>
 
 <header>
