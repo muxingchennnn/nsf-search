@@ -7,7 +7,7 @@
 </script>
 
 <div class="result">
-    <p class="title">{title}</p>
+    <p class="title">{@html title}</p>
     <div class="subline">
         <span>{date}</span>
         <span>·</span>
@@ -15,7 +15,7 @@
         <span>·</span>
         <span>{program}</span>
     </div>
-    <p class="abstract">{abstract}</p>
+    <p class="abstract">{@html abstract}</p>
 </div>
 
 <style>

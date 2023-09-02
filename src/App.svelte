@@ -35,10 +35,30 @@
     }
     $: console.log({awardsData})
 
+    // Function to highlight keywords in a text
+    function highlightKeywords(text, keywords) {
+        // Replace each keyword in the text with a highlighted version
+        keywords.forEach((keyword) => {
+        const regex = new RegExp(`(${keyword})`, "gi");
+        text = text.replace(regex, '<span class="highlight" style="background-color: rgba(250, 197, 21, 0.2)">$1</span>');
+        });
+        return text;
+    }
+
+    // Function to remove highlight keywords in a text
+    function removeHighlight(text) {
+        return text.replace(/<span class="highlight" style="background-color: rgba\(250, 197, 21, 0.2\)">([^<]*)<\/span>/gi, '$1');
+    }
+
     // search/filter results
     let searchTerm = ""
+    let searchTermProcessed
     let searchedResults
+    let keywordHighlighted
     $: console.log({searchTerm})
+    $: console.log({searchTermProcessed})
+    $: console.log({searchedResults})
+    $: console.log({keywordHighlighted})
 
     $: if (searchTerm === "") {
         searchedResults = awardsData
@@ -47,7 +67,7 @@
         // First, split the searchTerm into tokens in an array when it is a long string
         // After that, use removeStopwords() to remove the stop words in that array
         // Lastly. loop through the token array to filter results that include the tokens in title or abstract
-        const searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' '))
+        searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
         const resultFiltered = searchTermProcessed.reduce((acc, term)=>{
             const subset = awardsData.filter((result) =>
                     // filter results with the search term in the title or abstract
@@ -58,6 +78,15 @@
         }, [])
         // remove duplicates
         searchedResults = Array.from(new Set(resultFiltered))
+
+        keywordHighlighted = searchedResults.map(result =>{
+            result.title = removeHighlight(result.title)
+            result.abstract = removeHighlight(result.abstract)
+            result.title = highlightKeywords(result.title, searchTermProcessed)
+            result.abstract = highlightKeywords(result.abstract, searchTermProcessed)
+    
+        })
+
     }
     
 
