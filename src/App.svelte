@@ -45,8 +45,6 @@
         return text;
     }
 
-    
-
     // search/filter results
     let searchTerm = ""
     let searchTermProcessed
@@ -83,7 +81,6 @@
         })
 
     }
-    
 
     // add pagination
     $: items = searchedResults
@@ -92,6 +89,21 @@
     let pageSize = 10
     $: paginatedItems = paginate({ items, pageSize, currentPage })
     $: console.log(paginatedItems)
+
+    // program list
+    $: programCounts = searchedResults.reduce((acc, curr) => {
+        acc[curr.program] = (acc[curr.program] || 0) + 1;
+        return acc;
+    }, {});
+
+    $: console.log(programCounts)
+
+    $: programList = Object.keys(programCounts).map(program => ({
+        program,
+        count: programCounts[program],
+    }));
+
+    $: console.log(programList.toSorted((a, b) => b.count - a.count))
 
 
 </script>
@@ -109,6 +121,19 @@
         {/if}
     </div>
     <div class="charts">
+        <h4>Programs</h4>
+        <div class="program-list">
+            {#each programList.toSorted((a, b) => b.count - a.count) as program}
+                <label>
+                    <input 
+                        type="checkbox"
+                        name="programs"
+                        value={program.program} 
+                    />
+                    &nbsp;{program.program} ({program.count})
+                </label>
+            {/each}
+        </div>
     </div>
 </main>
 
@@ -147,6 +172,17 @@
     min-width: 400px;
     /* background-color: lightblue; */
     /* border: 1px solid #000 */
+    
+}
+
+.program-list {
+    max-height: 75vh;
+    margin-top: 1rem;
+    display:flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    overflow: scroll;
+    gap:0.5rem;
 }
 
 </style>
