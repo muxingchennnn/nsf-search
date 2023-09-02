@@ -13,7 +13,7 @@
         <span>·</span>
         <span>{investigator}</span>
         <span>·</span>
-        <span>{program}</span>
+        <span class="program">{program}</span>
     </div>
     <p class="abstract">{@html abstract}</p>
 </div>
@@ -39,7 +39,7 @@
 .subline {
     display: inline-flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.25rem;
 
     color: var(--grey-500, #70707B);
@@ -66,5 +66,11 @@ p.abstract {
     font-style: normal;
     font-weight: 400;
     line-height: 150%; /* 24px */
+}
+
+.program{
+    padding: 0.1rem 0.4rem;
+    background-color: #F4F4F5;
+    border-radius: 0.2rem;
 }
 </style>
