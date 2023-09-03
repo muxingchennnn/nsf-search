@@ -4,6 +4,7 @@
     export let title
     export let abstract
     export let date
+    export let amount
 </script>
 
 <div class="result">
@@ -14,6 +15,8 @@
         <span>{investigator}</span>
         <span>·</span>
         <span class="program">{program}</span>
+        <span>·</span>
+        <span>{amount}</span>
     </div>
     <p class="abstract">{@html abstract}</p>
 </div>

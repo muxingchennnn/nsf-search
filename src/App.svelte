@@ -20,7 +20,7 @@
 
     // parse data
     let awardsData = []
-	d3.csv("/dataset/IIS awards.csv", parseData)
+	d3.csv("/dataset/IIS Awards.csv", parseData)
 		.then(res => awardsData = res)
 
     function parseData(d){
@@ -30,7 +30,8 @@
             investigator: d.PrincipalInvestigator,
             program: d['Program(s)'],
             date: moment(d.StartDate, "MM/DD/YY").format('ll'),
-            title: d.Title
+            title: d.Title,
+            amount: d.AwardedAmountToDate
         }
     }
     $: console.log({awardsData})
@@ -83,7 +84,7 @@
     }
 
     // add pagination
-    $: items = searchedResults
+    $: items = programFilter.length > 0 ? resultsFilteredByProgram : searchedResults
     $: console.log(items)
     let currentPage = 1
     let pageSize = 10
@@ -96,14 +97,22 @@
         return acc;
     }, {});
 
-    $: console.log(programCounts)
-
     $: programList = Object.keys(programCounts).map(program => ({
         program,
         count: programCounts[program],
     }));
 
-    $: console.log(programList.toSorted((a, b) => b.count - a.count))
+    // program filter
+    let programFilter = []
+    $: console.log(programFilter)
+    $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
+        const subset = searchedResults.filter((result) =>
+                result.program === program
+        )
+        return acc.concat(subset)
+    }, [])
+
+    
 
 
 </script>
@@ -129,6 +138,7 @@
                         type="checkbox"
                         name="programs"
                         value={program.program} 
+                        bind:group={programFilter}
                     />
                     &nbsp;{program.program} ({program.count})
                 </label>
