@@ -83,7 +83,7 @@
 
     }
 
-    // add pagination
+    // pagination
     $: items = programFilter.length > 0 ? resultsFilteredByProgram : searchedResults
     $: console.log(items)
     let currentPage = 1
@@ -92,15 +92,22 @@
     $: console.log(paginatedItems)
 
     // program list
-    $: programCounts = searchedResults.reduce((acc, curr) => {
-        acc[curr.program] = (acc[curr.program] || 0) + 1;
+    // Create an array of all programs (not unique)
+    $: allPrograms = searchedResults.map((result) => result.program.split(', ')).flat();
+
+    // Create an object with the counts of each program
+    $: programCounts = allPrograms.reduce((acc, curr) => {
+        acc[curr] = (acc[curr] || 0) + 1;
         return acc;
     }, {});
 
-    $: programList = Object.keys(programCounts).map(program => ({
+    // Create an array of objects with the unique program values and their counts
+    $: programDistribution = Object.keys(programCounts).map(program => ({
         program,
         count: programCounts[program],
     }));
+
+    $: console.log(programDistribution)
 
     // program filter
     let programFilter = []
@@ -120,7 +127,7 @@
 <Header bind:searchTerm bind:searchedResults/>
 
 <main class="container">
-    <div class="results">
+    <section class="results">
         {#if paginatedItems.length}
             {#each paginatedItems as result}
                 <Result {...result}/>
@@ -128,11 +135,11 @@
         {:else}
             <p>No results about "{searchTerm}"</p>
         {/if}
-    </div>
-    <div class="charts">
+    </section>
+    <section class="charts">
         <h4>Programs</h4>
         <div class="program-list">
-            {#each programList.toSorted((a, b) => b.count - a.count) as program}
+            {#each programDistribution.toSorted((a, b) => b.count - a.count) as program}
                 <label>
                     <input 
                         type="checkbox"
@@ -144,7 +151,8 @@
                 </label>
             {/each}
         </div>
-    </div>
+        <span>scroll to see more &darr;</span>
+    </section>
 </main>
 
 {#if paginatedItems.length > 0}
@@ -192,7 +200,13 @@
     flex-direction: column;
     flex-wrap: nowrap;
     overflow: scroll;
-    gap:0.5rem;
+    gap:0.2rem;
+
+    font-family: Inter;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 150%;
 }
 
 </style>

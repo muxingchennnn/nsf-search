@@ -5,7 +5,12 @@
     export let abstract
     export let date
     export let amount
+
+    $: programList = program.split(', ')
+    
 </script>
+
+
 
 <div class="result">
     <p class="title">{@html title}</p>
@@ -14,11 +19,16 @@
         <span>·</span>
         <span>{investigator}</span>
         <span>·</span>
-        <span class="program">{program}</span>
-        <span>·</span>
+        {#each programList as program}
+            <span class="program">{program}</span>
+            <span>·</span>
+        {/each}
         <span>{amount}</span>
     </div>
-    <p class="abstract">{@html abstract}</p>
+    <div class="abstract">
+        <span class="abstract-content">{@html abstract}</span>
+        <input class="expand-btn" type="checkbox">
+    </div>
 </div>
 
 <style>
@@ -55,12 +65,17 @@
     margin-bottom: 0.4rem;
 }
 
+.abstract {
+    display: flex;
+    /* flex-direction: column; */
+    align-items: baseline;
+    gap: 1rem;
+}
 
-
-p.abstract {
+.abstract-content {
     display: -webkit-box;
-    -webkit-line-clamp: 3; /* limits the content to 3 lines */
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3; /* limits the content to 3 lines */
     overflow: hidden;
 
     color: #000;
@@ -69,6 +84,39 @@ p.abstract {
     font-style: normal;
     font-weight: 400;
     line-height: 150%; /* 24px */
+}
+
+.expand-btn {
+    appearance: none;
+    /* border: 1px solid #70707B; */
+    /* padding: 0.2rem; */
+    /* border-radius: 0.2rem; */
+    cursor: pointer;
+    font-family: Inter;
+    font-size: 0.7rem;
+    font-style: normal;
+    font-weight: 400;
+    /* color: var(--blue-700, #175CD3); */
+    color: var(--grey-500, #70707B);
+    line-height: 1.2rem;
+    align-self: flex-end;
+}
+
+.expand-btn:hover {
+    background-color: var(--grey-200, #E4E4E7);
+}
+
+.expand-btn::before {
+    content: "Expand"
+}
+
+.expand-btn:checked::before {
+    content: "Collapse"
+}
+
+.abstract-content:has(+ .expand-btn:checked){
+    /* set the line height limit to a extreme large number */
+    -webkit-line-clamp: 9999;
 }
 
 .program{
