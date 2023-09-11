@@ -33,7 +33,8 @@
 .tabs {
     display: flex;
     cursor: pointer;
-    margin-bottom: 20px;
+    /* margin-bottom: 1rem; */
+    /* border-bottom: 1px solid #E4E4E7 */
 }
 
 .tab {
@@ -60,6 +61,11 @@
     font-style: normal;
     font-weight: 400;
     line-height: 150%;
+}
+
+.reminder{
+    padding-top: 0.5rem;
+    /* border-top: 1px solid #E4E4E7 */
 }
 
 </style>

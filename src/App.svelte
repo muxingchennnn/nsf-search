@@ -48,7 +48,7 @@
     // search results
     let searchTerm = ""
     let searchResults
-    $: console.log({searchTerm})
+    // $: console.log({searchTerm})
     $: console.log({searchResults})
 
     $: if (searchTerm === "") {
@@ -82,25 +82,56 @@
     // program filter
     let programFilter = []
     $: console.log(programFilter)
-    $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
-        const subset = searchResults.filter((result) =>
-                result.program === program
-        )
-        return acc.concat(subset)
-    }, [])
+    // $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
+    //     const subset = searchResults.filter((result) =>
+    //             result.program === program
+    //     )
+    //     return acc.concat(subset)
+    // }, [])
 
     // institution filter
     let institutionFilter = []
     $: console.log(institutionFilter)
-    $: resultsFilteredByInstitution = institutionFilter.reduce((acc, institution)=>{
-        const subset = searchResults.filter((result) =>
-                result.institution === institution
-        )
-        return acc.concat(subset)
-    }, [])
+    // $: resultsFilteredByInstitution = institutionFilter.reduce((acc, institution)=>{
+    //     const subset = searchResults.filter((result) =>
+    //             result.institution === institution
+    //     )
+    //     return acc.concat(subset)
+    // }, [])
+
+    $: filteredResults = searchResults.filter(result => 
+        (programFilter.length === 0 || programFilter.some(program => result.program.includes(program))) && 
+        (institutionFilter.length === 0 || institutionFilter.includes(result.institution))
+    );
+    $: console.log(filteredResults)
+
+    let sortingMethod = 'date - descending';
+    $:console.log(sortingMethod)
+
+    // convert dollar amount into number
+    function convertAmount(str){ return parseFloat(str.replace(/[^0-9.-]+/g,""))}
+
+    // sort results based on conditions
+    function sortResults(results, sortingMethod){
+        switch (sortingMethod) {
+            case 'date - ascending':
+                return results.toSorted((a, b) => new Date(a.date) - new Date(a.date));
+            break
+            case 'date - descending':
+                return results.toSorted((a, b) => new Date(b.date) - new Date(a.date));
+            break
+            case 'amount - descending':
+                return results.toSorted((a, b) => convertAmount(b.amount) - convertAmount(a.amount));
+            break
+        }
+    };
+
+    $: finalResults = sortResults(filteredResults, sortingMethod)
+
+   
 
     // pagination
-    $: items = programFilter.length > 0 ? resultsFilteredByProgram : searchResults
+    $: items = finalResults
     $: console.log(items)
     let currentPage = 1
     let pageSize = 10
@@ -112,9 +143,9 @@
 </script>
 
 <Header bind:searchTerm bind:searchResults/>
-
 <main class="container">
     <section class="results">
+        
         {#if paginatedItems.length}
             {#each paginatedItems as result}
                 <Result {...result}/>
@@ -123,7 +154,15 @@
             <p>No results about "{searchTerm}"</p>
         {/if}
     </section>
-    <section class="filters">
+    <section class="right-panel">
+        <label class="sort-by">
+            Sort by:
+            <select bind:value={sortingMethod}>
+                <option value="date - descending" >Date - Descending</option>
+                <option value="date - ascending">Date - Ascending</option>
+                <option value="amount - descending">Amount - Descending</option>
+            </select>
+        </label>
         <Filters {searchResults} bind:programFilter bind:institutionFilter/>
     </section>
 </main>
@@ -157,7 +196,14 @@
     gap:1.5rem;
 }
 
-.filters {
+.sort-by{
+    padding-bottom: 2rem;
+    
+}
+
+.right-panel {
+    display:flex;
+    flex-direction: column;
     /* height:300px; */
     width:30%;
     min-width: 400px;
