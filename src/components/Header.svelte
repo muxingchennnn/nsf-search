@@ -1,6 +1,7 @@
 <script>
     export let searchTerm
     export let searchedResults
+    
     let textInput=""
 
     // Function to remove highlight keywords in a text

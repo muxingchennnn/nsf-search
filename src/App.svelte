@@ -1,7 +1,8 @@
 <script>
     import Header from "./components/Header.svelte";
     import Result from "./components/Result.svelte";
-    import Filter from "./components/Filter.svelte";
+    import Filters from "./components/Filters.svelte";
+    import Tabs from "./components/Tabs.svelte";
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
@@ -47,10 +48,8 @@
     // search results
     let searchTerm = ""
     let searchResults
-    let keywordHighlighted
     $: console.log({searchTerm})
     $: console.log({searchResults})
-    $: console.log({keywordHighlighted})
 
     $: if (searchTerm === "") {
         searchResults = awardsData
@@ -71,7 +70,8 @@
         // remove duplicates
         searchResults = Array.from(new Set(resultFiltered))
 
-        keywordHighlighted = searchResults.map(result =>{
+        // highlight keywords
+        searchResults.map(result =>{
             result.title = highlightKeywords(result.title, searchTermProcessed)
             result.abstract = highlightKeywords(result.abstract, searchTermProcessed)
     
@@ -79,13 +79,22 @@
 
     }
 
-
     // program filter
     let programFilter = []
     $: console.log(programFilter)
     $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
         const subset = searchResults.filter((result) =>
                 result.program === program
+        )
+        return acc.concat(subset)
+    }, [])
+
+    // institution filter
+    let institutionFilter = []
+    $: console.log(institutionFilter)
+    $: resultsFilteredByInstitution = institutionFilter.reduce((acc, institution)=>{
+        const subset = searchResults.filter((result) =>
+                result.institution === institution
         )
         return acc.concat(subset)
     }, [])
@@ -115,7 +124,7 @@
         {/if}
     </section>
     <section class="filters">
-        <Filter {searchResults} bind:programFilter/>
+        <Filters {searchResults} bind:programFilter bind:institutionFilter/>
     </section>
 </main>
 
