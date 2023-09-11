@@ -4,24 +4,19 @@
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
-    // import {onMount} from "svelte"
+    import {onMount} from "svelte"
     import { removeStopwords } from 'stopword'
 
     
-    // let awardsData = []
-    // onMount(async()=>{
-    //     awardsData = await dataLoading()
-    // })
-
-    //  async function dataLoading() {
-    //     const awardsData = await d3.csv("src/dataset/sample data.csv", parseData)
-    //     return awardsData
-    // }
-
-    // parse data
     let awardsData = []
-	d3.csv("/dataset/IIS Awards.csv", parseData)
-		.then(res => awardsData = res)
+    onMount(async()=>{
+        awardsData = await dataLoading()
+    })
+
+    async function dataLoading() {
+        const data = await d3.csv('/dataset/IIS Awards.csv', parseData)
+        return data
+    }
 
     function parseData(d){
         return{
@@ -31,7 +26,8 @@
             program: d['Program(s)'],
             date: moment(d.StartDate, "MM/DD/YY").format('ll'),
             title: d.Title,
-            amount: d.AwardedAmountToDate
+            amount: d.AwardedAmountToDate,
+            institution: d.Organization
         }
     }
     $: console.log({awardsData})
@@ -48,22 +44,20 @@
 
     // search/filter results
     let searchTerm = ""
-    let searchTermProcessed
-    let searchedResults
+    let searchResults
     let keywordHighlighted
     $: console.log({searchTerm})
-    $: console.log({searchTermProcessed})
-    $: console.log({searchedResults})
+    $: console.log({searchResults})
     $: console.log({keywordHighlighted})
 
     $: if (searchTerm === "") {
-        searchedResults = awardsData
+        searchResults = awardsData
     } 
     else {
         // First, split the searchTerm into tokens in an array when it is a long string
         // After that, use removeStopwords() to remove the stop words in that array
         // Lastly. loop through the token array to filter results that include the tokens in title or abstract
-        searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
+        const searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
         const resultFiltered = searchTermProcessed.reduce((acc, term)=>{
             const subset = awardsData.filter((result) =>
                     // filter results with the search term in the title or abstract
@@ -73,9 +67,9 @@
             return acc.concat(subset)
         }, [])
         // remove duplicates
-        searchedResults = Array.from(new Set(resultFiltered))
+        searchResults = Array.from(new Set(resultFiltered))
 
-        keywordHighlighted = searchedResults.map(result =>{
+        keywordHighlighted = searchResults.map(result =>{
             result.title = highlightKeywords(result.title, searchTermProcessed)
             result.abstract = highlightKeywords(result.abstract, searchTermProcessed)
     
@@ -84,7 +78,7 @@
     }
 
     // pagination
-    $: items = programFilter.length > 0 ? resultsFilteredByProgram : searchedResults
+    $: items = programFilter.length > 0 ? resultsFilteredByProgram : searchResults
     $: console.log(items)
     let currentPage = 1
     let pageSize = 10
@@ -93,7 +87,7 @@
 
     // program list
     // Create an array of all programs (not unique)
-    $: allPrograms = searchedResults.map((result) => result.program.split(', ')).flat();
+    $: allPrograms = searchResults.map((result) => result.program.split(', ')).flat();
 
     // Create an object with the counts of each program
     $: programCounts = allPrograms.reduce((acc, curr) => {
@@ -113,7 +107,7 @@
     let programFilter = []
     $: console.log(programFilter)
     $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
-        const subset = searchedResults.filter((result) =>
+        const subset = searchResults.filter((result) =>
                 result.program === program
         )
         return acc.concat(subset)
@@ -124,7 +118,7 @@
 
 </script>
 
-<Header bind:searchTerm bind:searchedResults/>
+<Header bind:searchTerm bind:searchResults/>
 
 <main class="container">
     <section class="results">
