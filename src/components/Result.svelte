@@ -1,12 +1,13 @@
 <script>
-    export let program
+    export let programs
     export let investigator
     export let title
     export let abstract
     export let date
     export let amount
+    export let programFilter
 
-    $: programList = program.split(', ')
+    $: programList = programs
     
 </script>
 
@@ -19,10 +20,17 @@
         <span>·</span>
         <span>{investigator}</span>
         <span>·</span>
-        {#each programList as program}
-            <span class="program">{program}</span>
-            <span>·</span>
-        {/each}
+        {#if !programList.includes('')}
+            {#each programList as program}
+                {#if programFilter.includes(program)}
+                    <span class="program program-selected">{program}</span>
+                    <span>·</span>
+                {:else}
+                    <span class="program">{program}</span>
+                    <span>·</span>
+                {/if}
+            {/each}
+        {/if}
         <span>{amount}</span>
     </div>
     <div class="abstract">
@@ -119,9 +127,13 @@
     -webkit-line-clamp: 9999;
 }
 
-.program{
+.program {
     padding: 0.1rem 0.4rem;
     background-color: #F4F4F5;
     border-radius: 0.2rem;
+}
+
+.program-selected {
+    background-color: rgba(250, 197, 21, 0.2)
 }
 </style>

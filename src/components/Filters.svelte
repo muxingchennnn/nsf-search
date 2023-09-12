@@ -2,13 +2,12 @@
     import ProgramFilter from "./ProgramFilter.svelte";
     import InstitutionFilter from "./InstitutionFilter.svelte";
     export let searchResults
+    export let finalResults
     export let programFilter
     export let institutionFilter
 
     let activeTab = 'program';
-    $: console.log(activeTab)
 
-    
 </script>
 
 <!-- Tab Headers -->
@@ -20,9 +19,9 @@
 <!-- Tab Content -->
 <div class="filter-list">
 {#if activeTab === 'program'}
-    <ProgramFilter bind:programFilter {searchResults}/>
+    <ProgramFilter bind:programFilter {searchResults} {finalResults}/>
 {:else if activeTab === 'institution'}
-    <InstitutionFilter bind:institutionFilter {searchResults}/>
+    <InstitutionFilter bind:institutionFilter {searchResults} {finalResults}/>
 {/if}
 </div>
 <span class="reminder">scroll to see more &darr;</span>

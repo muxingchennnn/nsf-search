@@ -1,6 +1,7 @@
 <script>
     export let searchTerm
     export let searchedResults
+    export let finalResults
     
     let textInput=""
 
@@ -11,7 +12,8 @@
 
     function clickSearch() {
         searchTerm = textInput
-        searchedResults.map(result =>{
+
+        finalResults.map(result =>{
             result.title = removeHighlight(result.title)
             result.abstract = removeHighlight(result.abstract)
         })
@@ -20,9 +22,10 @@
     function pressEnter(event) {
         // Check if the 'return' key was pressed
         if (event.key === "Enter") {
-        searchTerm = textInput
+            searchTerm = textInput
         }
-        searchedResults.map(result =>{
+        
+        finalResults.map(result =>{
             result.title = removeHighlight(result.title)
             result.abstract = removeHighlight(result.abstract)
         })

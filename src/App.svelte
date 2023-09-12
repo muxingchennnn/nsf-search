@@ -26,7 +26,9 @@
             abstract: d.Abstract,
             awardNumber: d.AwardNumber,
             investigator: d.PrincipalInvestigator,
-            program: d['Program(s)'],
+            programs: d['Program(s)'].split(", ").filter( (program , i) => {
+                return i === 0 ? true : program !== ''
+            }),
             date: moment(d.StartDate, "MM/DD/YY").format('ll'),
             title: d.Title,
             amount: d.AwardedAmountToDate,
@@ -47,18 +49,19 @@
 
     // search results
     let searchTerm = ""
+    $: searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
     let searchResults
     // $: console.log({searchTerm})
     $: console.log({searchResults})
 
     $: if (searchTerm === "") {
-        searchResults = awardsData
+        searchResults = awardsData.sort((a, b) => new Date(b.date) - new Date(a.date))
     } 
     else {
         // First, split the searchTerm into tokens in an array when it is a long string
         // After that, use removeStopwords() to remove the stop words in that array
         // Lastly. loop through the token array to filter results that include the tokens in title or abstract
-        const searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
+        
         const resultFiltered = searchTermProcessed.reduce((acc, term)=>{
             const subset = awardsData.filter((result) =>
                     // filter results with the search term in the title or abstract
@@ -79,60 +82,102 @@
 
     }
 
-    // program filter
-    let programFilter = []
-    $: console.log(programFilter)
-    // $: resultsFilteredByProgram = programFilter.reduce((acc, program)=>{
-    //     const subset = searchResults.filter((result) =>
-    //             result.program === program
-    //     )
-    //     return acc.concat(subset)
-    // }, [])
+    // filter results
 
-    // institution filter
+    // filters
+    let programFilter = []
     let institutionFilter = []
-    $: console.log(institutionFilter)
-    // $: resultsFilteredByInstitution = institutionFilter.reduce((acc, institution)=>{
-    //     const subset = searchResults.filter((result) =>
-    //             result.institution === institution
-    //     )
-    //     return acc.concat(subset)
-    // }, [])
 
     $: filteredResults = searchResults.filter(result => 
-        (programFilter.length === 0 || programFilter.some(program => result.program.includes(program))) && 
+        (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
         (institutionFilter.length === 0 || institutionFilter.includes(result.institution))
     );
     $: console.log(filteredResults)
 
-    let sortingMethod = 'date - descending';
+
+    // sort results
+    let sortingMethod = 'relevance';
     $:console.log(sortingMethod)
 
     // convert dollar amount into number
     function convertAmount(str){ return parseFloat(str.replace(/[^0-9.-]+/g,""))}
 
+    function getMatchingKeywordCount(str, keywords) {
+        str = str.toLowerCase()
+        return keywords.reduce((acc, keyword) => {
+            return acc + (str.includes(keyword) ? 1 : 0);
+        }, 0);
+    }
+
+    function getTotalMatchingKeywordCount(str, keywords) {
+        str = str.toLowerCase()
+        return keywords.reduce((acc, keyword) => {
+            return acc + (str.split(keyword).length - 1);
+        }, 0);
+    }
+
+    function getMatchingProgramCount(programs, programFilter) {
+        return [...new Set(programs)].filter((program) => [...new Set(programFilter)].includes(program)).length;
+    }
+
+    
     // sort results based on conditions
     function sortResults(results, sortingMethod){
+        console.time("sortResults");
         switch (sortingMethod) {
+            case 'relevance':
+                if(searchTerm != "" || programFilter.length > 0){
+                    return results.toSorted((a, b) => {
+                            // first compare the total number of unique matching keywords in title and abstract plug the number of programs
+                            const relevanceA =
+                                getMatchingKeywordCount(a.title + a.abstract, searchTermProcessed) +
+                                getMatchingProgramCount(a.programs, programFilter);
+                            const relevanceB = 
+                                getMatchingKeywordCount(b.title + b.abstract, searchTermProcessed) +
+                                getMatchingProgramCount(b.programs, programFilter);
+
+                            let results
+
+                            // for results have the same above number, we compare the number of unique keywords in title
+                            // if the number of unique keywords in title is also the same, we compare the total number of keywords in title and abstract
+                            if(relevanceB - relevanceA === 0) {
+                                const titleComparison = getMatchingKeywordCount(b.title, searchTermProcessed) -
+                                                        getMatchingKeywordCount(a.title, searchTermProcessed);
+                                results = titleComparison !== 0 ? titleComparison : 
+                                        getTotalMatchingKeywordCount(b.title + b.abstract, searchTermProcessed) -
+                                        getTotalMatchingKeywordCount(a.title + a.abstract, searchTermProcessed);
+                            } else {
+                                results = relevanceB - relevanceA;
+                            }
+                            
+                            return results
+
+                            });
+                    } else {
+                    return results.toSorted((a, b) => new Date(b.date) - new Date(a.date));
+                    }
+             
             case 'date - ascending':
-                return results.toSorted((a, b) => new Date(a.date) - new Date(a.date));
-            break
+                return results.toSorted((a, b) => new Date(a.date) - new Date(b.date));
+            break;
             case 'date - descending':
                 return results.toSorted((a, b) => new Date(b.date) - new Date(a.date));
-            break
+            break;
             case 'amount - descending':
                 return results.toSorted((a, b) => convertAmount(b.amount) - convertAmount(a.amount));
-            break
+            break;
+            
         }
+        console.timeEnd("sortResults");
     };
-
+    
     $: finalResults = sortResults(filteredResults, sortingMethod)
 
    
 
     // pagination
     $: items = finalResults
-    $: console.log(items)
+    // $: console.log(items)
     let currentPage = 1
     let pageSize = 10
     $: paginatedItems = paginate({ items, pageSize, currentPage })
@@ -142,28 +187,29 @@
 
 </script>
 
-<Header bind:searchTerm bind:searchResults/>
+<Header bind:searchTerm bind:searchResults bind:finalResults/>
 <main class="container">
     <section class="results">
         
         {#if paginatedItems.length}
             {#each paginatedItems as result}
-                <Result {...result}/>
+                <Result {...result} {programFilter}/>
             {/each}
         {:else}
             <p>No results about "{searchTerm}"</p>
         {/if}
     </section>
     <section class="right-panel">
-        <label class="sort-by">
+        <label class="sort sort-by">
             Sort by:
-            <select bind:value={sortingMethod}>
+            <select bind:value={sortingMethod} class="sort-by">
+                <option value="relevance" >Relevance</option>
                 <option value="date - descending" >Date - Descending</option>
                 <option value="date - ascending">Date - Ascending</option>
                 <option value="amount - descending">Amount - Descending</option>
             </select>
         </label>
-        <Filters {searchResults} bind:programFilter bind:institutionFilter/>
+        <Filters {searchResults} {finalResults} bind:programFilter bind:institutionFilter/>
     </section>
 </main>
 
@@ -196,9 +242,16 @@
     gap:1.5rem;
 }
 
-.sort-by{
+.sort {
     padding-bottom: 2rem;
-    
+}
+
+.sort-by{
+    color: #000;
+    font-family: Inter;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 400;
 }
 
 .right-panel {
