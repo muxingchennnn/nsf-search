@@ -28,7 +28,7 @@
 
     function parseData(d){
         return{
-            abstract: d.Abstract,
+            abstract: d.Abstract.replace(/<\s*br\s*\/\s*>/gi, '').replace(/\s+([,.;!?])/g, '$1'), // remove all the <br/> string and whitespaces before the punctuations
             awardNumber: d.AwardNumber,
             investigator: d.PrincipalInvestigator,
             programs: d['Program(s)'].split(", ").filter( (program , i) => {
@@ -130,8 +130,6 @@
     
     // sort results based on conditions
     function sortResults(results, sortingMethod){
-        
-        console.time("sortResults");
         switch (sortingMethod) {
             case 'relevance':
                 if(searchTerm != "" || programFilter.length > 0){
@@ -176,7 +174,6 @@
             break;
             
         }
-        console.timeEnd("sortResults");
         
     };
     
