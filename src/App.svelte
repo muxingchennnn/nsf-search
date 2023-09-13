@@ -96,7 +96,8 @@
 
     $: filteredResults = searchResults.filter(result => 
         (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
-        (institutionFilter.length === 0 || institutionFilter.includes(result.institution))
+        (institutionFilter.length === 0 || institutionFilter.includes(result.institution)) &&
+        (investigatorFilter.length === 0 || investigatorFilter.includes(result.investigator))
     );
     $: console.log(filteredResults)
 
@@ -194,7 +195,6 @@
 
 
 </script>
-<p>Data loading took: {loadingTime} milliseconds</p>
 <Header bind:searchTerm bind:searchResults bind:finalResults/>
 
 {#if isLoading}
