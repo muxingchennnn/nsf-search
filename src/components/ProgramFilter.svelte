@@ -5,7 +5,7 @@
 
   // Generate program filter list
   // Create an array of all programs (not unique)
-  $: allPrograms = finalResults.map((result) => result.programs).flat();
+  $: allPrograms = searchResults.map((result) => result.programs).flat();
   // Create an object with the counts of each program
   $: programCounts = allPrograms.reduce((acc, curr) => {
       acc[curr] = (acc[curr] || 0) + 1;

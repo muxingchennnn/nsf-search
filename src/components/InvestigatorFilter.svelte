@@ -1,26 +1,26 @@
 <script>
   export let searchResults
   export let finalResults
-  export let institutionFilter
+  export let investigatorFilter
 
   // Generate program filter list
-  const uniqueInstitution = [...new Set(searchResults.map((result) => result.institution))];
-  $: console.log({uniqueInstitution})
+  const uniqueInvestigator = [...new Set(searchResults.map((result) => result.investigator))];
+  $: console.log({uniqueInvestigator})
   // Create an array of all institutions
   // $: allInstitution = finalResults.map((result) => result.institution);
   // $: console.log({allInstitution})
   // Create an object with the counts of each institution
-  $: institutionCounts = searchResults
-      .map((result) => result.institution)
+  $: investigatorCounts = searchResults
+      .map((result) => result.investigator)
       .reduce((acc, curr) => {
         acc[curr] = (acc[curr] || 0) + 1;
         return acc;
       }, {});
-  $: console.log({institutionCounts})
+  $: console.log({investigatorCounts})
   // Create an array of objects with the unique institutions and their counts
-  // $: institutionDistribution = Object.keys(institutionCounts).map(institution => ({
+  // $: institutionDistribution = Object.keys(investigatorCounts).map(institution => ({
   //     institution,
-  //     count: institutionCounts[institution],
+  //     count: investigatorCounts[institution],
   // }));
 
   // $: console.log(institutionDistribution)
@@ -29,10 +29,10 @@
   // $: if (institutionDistribution !== preState){
   //   preState = 
   // }
-  $: institutionDistribution = uniqueInstitution
+  $: investigatorDistribution = uniqueInvestigator
       .map(key => ({
-        institution: key,
-        count: institutionCounts[key] || 0
+        investigator: key,
+        count: investigatorCounts[key] || 0
       }))
       .sort((a, b) => b.count - a.count);
   
@@ -40,14 +40,14 @@
   
 </script>
 
-{#each institutionDistribution as institution}
+{#each investigatorDistribution as investigator}
     <label>
         <input 
             type="checkbox"
-            name="institution"
-            value={institution.institution} 
-            bind:group={institutionFilter}
+            name="investigator"
+            value={investigator.investigator} 
+            bind:group={investigatorFilter}
         />
-        &nbsp;{institution.institution} ({institution.count})
+        &nbsp;{investigator.investigator} ({investigator.count})
     </label>
 {/each}

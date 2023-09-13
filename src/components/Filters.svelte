@@ -1,10 +1,12 @@
 <script>
     import ProgramFilter from "./ProgramFilter.svelte";
     import InstitutionFilter from "./InstitutionFilter.svelte";
+    import InvestigatorFilter from "./InvestigatorFilter.svelte";
     export let searchResults
     export let finalResults
     export let programFilter
     export let institutionFilter
+    export let investigatorFilter
 
     let activeTab = 'program';
 
@@ -14,6 +16,7 @@
 <div class="tabs">
     <div class="tab {activeTab === 'program' ? 'active' : ''}" on:click={() => activeTab = 'program'}>Program</div>
     <div class="tab {activeTab === 'institution' ? 'active' : ''}" on:click={() => activeTab = 'institution'}>Institution</div>
+    <div class="tab {activeTab === 'investigator' ? 'active' : ''}" on:click={() => activeTab = 'investigator'}>Investigator</div>
 </div>
 
 <!-- Tab Content -->
@@ -22,6 +25,8 @@
     <ProgramFilter bind:programFilter {searchResults} {finalResults}/>
 {:else if activeTab === 'institution'}
     <InstitutionFilter bind:institutionFilter {searchResults} {finalResults}/>
+{:else if activeTab === 'investigator'}
+    <InvestigatorFilter bind:investigatorFilter {searchResults} {finalResults}/>
 {/if}
 </div>
 <span class="reminder">scroll to see more &darr;</span>

@@ -48,8 +48,8 @@
 <style>
 
     header {
+        padding: 1rem 2rem;
         display: flex;
-        padding: 1rem;
         gap:4rem;
         align-items:center;
         justify-content: space-between;
@@ -78,7 +78,7 @@
     }
 
     #searchBar {
-        min-width: 18rem;
+        max-width: 40rem;
         padding: 0.625rem 0.875rem;
         flex-grow:1;
         

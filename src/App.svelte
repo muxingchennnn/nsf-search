@@ -2,18 +2,23 @@
     import Header from "./components/Header.svelte";
     import Result from "./components/Result.svelte";
     import Filters from "./components/Filters.svelte";
-    import Tabs from "./components/Tabs.svelte";
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
     import {onMount} from "svelte"
     import { removeStopwords } from 'stopword'
+    import { fade } from 'svelte/transition'
+    import { SyncLoader } from 'svelte-loading-spinners';
 
+    let loadingTime;
+    let isLoading = true;
+    let searchResult = [];
 
     // data loading and parsing    
     let awardsData = []
     onMount(async()=>{
         awardsData = await dataLoading()
+        isLoading = false;
     })
 
     async function dataLoading() {
@@ -87,6 +92,7 @@
     // filters
     let programFilter = []
     let institutionFilter = []
+    let investigatorFilter = []
 
     $: filteredResults = searchResults.filter(result => 
         (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
@@ -123,10 +129,12 @@
     
     // sort results based on conditions
     function sortResults(results, sortingMethod){
+        
         console.time("sortResults");
         switch (sortingMethod) {
             case 'relevance':
                 if(searchTerm != "" || programFilter.length > 0){
+                    
                     return results.toSorted((a, b) => {
                             // first compare the total number of unique matching keywords in title and abstract plug the number of programs
                             const relevanceA =
@@ -149,7 +157,6 @@
                             } else {
                                 results = relevanceB - relevanceA;
                             }
-                            
                             return results
 
                             });
@@ -169,6 +176,7 @@
             
         }
         console.timeEnd("sortResults");
+        
     };
     
     $: finalResults = sortResults(filteredResults, sortingMethod)
@@ -186,45 +194,69 @@
 
 
 </script>
-
+<p>Data loading took: {loadingTime} milliseconds</p>
 <Header bind:searchTerm bind:searchResults bind:finalResults/>
-<main class="container">
-    <section class="results">
-        
-        {#if paginatedItems.length}
-            {#each paginatedItems as result}
-                <Result {...result} {programFilter}/>
-            {/each}
-        {:else}
-            <p>No results about "{searchTerm}"</p>
-        {/if}
-    </section>
-    <section class="right-panel">
-        <label class="sort sort-by">
-            Sort by:
-            <select bind:value={sortingMethod} class="sort-by">
-                <option value="relevance" >Relevance</option>
-                <option value="date - descending" >Date - Descending</option>
-                <option value="date - ascending">Date - Ascending</option>
-                <option value="amount - descending">Amount - Descending</option>
-            </select>
-        </label>
-        <Filters {searchResults} {finalResults} bind:programFilter bind:institutionFilter/>
-    </section>
-</main>
 
-{#if paginatedItems.length > 0}
-    <LightPaginationNav
-    totalItems="{items.length}"
-    pageSize="{pageSize}"
-    currentPage="{currentPage}"
-    limit="{1}"
-    showStepOptions="{true}"
-    on:setPage="{(e) => currentPage = e.detail.page}"
-    />
+{#if isLoading}
+    <div class="loader" transition:fade>
+        <p>Loading...</p>
+        <SyncLoader size="2" color="#2E90FA" unit="rem" duration="1s" />
+    </div>
+
+{:else}
+    <main class="container">
+        <section class="results">
+            
+            {#if paginatedItems.length}
+                {#each paginatedItems as result}
+                    <Result {...result} {programFilter}/>
+                {/each}
+            {:else}
+                <p>No results about "{searchTerm}"</p>
+            {/if}
+        </section>
+        <section class="right-panel">
+            <label class="sort sort-by">
+                Sort by:
+                <select bind:value={sortingMethod} class="sort-by">
+                    <option value="relevance" >Relevance</option>
+                    <option value="date - descending" >Date - Descending</option>
+                    <option value="date - ascending">Date - Ascending</option>
+                    <option value="amount - descending">Amount - Descending</option>
+                </select>
+            </label>
+            <Filters {searchResults} {finalResults} bind:programFilter bind:institutionFilter bind:investigatorFilter/>
+        </section>
+    </main>
+
+    {#if paginatedItems.length > 0}
+        <LightPaginationNav
+        totalItems="{items.length}"
+        pageSize="{pageSize}"
+        currentPage="{currentPage}"
+        limit="{1}"
+        showStepOptions="{true}"
+        on:setPage="{(e) => currentPage = e.detail.page}"
+        />
+    {/if}
 {/if}
 
 <style>
+
+.loader {
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+	justify-content: center;
+	position: absolute;
+    inset: 0;
+    background: rgb(255 255 255 / .9);
+
+    font-family: Inter;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 400;
+}
 
 .container {
     width:80%;
