@@ -44,6 +44,7 @@
         <button class="btn--sign-up">Sign Up</button>
     </div>
 </header>
+<div class="separator"></div>
 
 <style>
 
@@ -56,8 +57,21 @@
         
 
         height: 5rem;
-        border-bottom: 1px solid #E4E4E7;
+        /* border-bottom: 1px solid #E4E4E7; */
+        /* margin-bottom: 3rem; */
+    }
+
+    .separator {
+        content: "";
+        display: block;
+        height: 1px;  
+        background-color: #E4E4E7; 
+        position: relative;
+        width: 100vw;  
+        left: 50%;
+        transform: translateX(-50%);  
         margin-bottom: 3rem;
+
     }
 
     .logo {
@@ -78,7 +92,7 @@
     }
 
     #searchBar {
-        max-width: 40rem;
+        max-width: 32rem;
         padding: 0.625rem 0.875rem;
         flex-grow:1;
         

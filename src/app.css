@@ -5,3 +5,8 @@
 
   font-family: Inter;
 }
+
+body {
+  max-width: 1440px;
+  margin: 0 auto;
+}

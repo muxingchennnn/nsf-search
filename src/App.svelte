@@ -259,8 +259,9 @@
 }
 
 .container {
-    width:80%;
-    margin: auto;
+    /* width:80%; */
+    padding: 0 2rem;
+    /* margin: auto; */
     display:flex;
     justify-content: space-between;
     gap: 4rem;
