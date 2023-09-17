@@ -4,6 +4,7 @@
     import InvestigatorFilter from "./InvestigatorFilter.svelte";
     export let searchResults
     export let finalResults
+    export let filteredResults
     export let programFilter
     export let institutionFilter
     export let investigatorFilter
@@ -22,11 +23,11 @@
 <!-- Tab Content -->
 <div class="filter-list">
 {#if activeTab === 'program'}
-    <ProgramFilter bind:programFilter {searchResults} {finalResults}/>
+    <ProgramFilter bind:programFilter {searchResults} {finalResults} {filteredResults}/>
 {:else if activeTab === 'institution'}
-    <InstitutionFilter bind:institutionFilter {searchResults} {finalResults}/>
+    <InstitutionFilter bind:institutionFilter {searchResults} {finalResults} {filteredResults}/>
 {:else if activeTab === 'investigator'}
-    <InvestigatorFilter bind:investigatorFilter {searchResults} {finalResults}/>
+    <InvestigatorFilter bind:investigatorFilter {searchResults} {finalResults} {filteredResults}/>
 {/if}
 </div>
 <span class="reminder">scroll to see more &darr;</span>

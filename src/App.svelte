@@ -42,6 +42,44 @@
     }
     $: console.log({awardsData})
 
+    function parseQuery(query) {
+        const matches = query.match(/-?\{.+?\}|[^ ]+/g) || [];
+        
+        return matches.reduce((acc, match) => {
+            if (match.startsWith('-{')) {
+                acc.excludes.push(match.slice(2, -1).toLowerCase());
+            } else if (match.startsWith('-')) {
+                acc.excludes.push(match.slice(1).toLowerCase());
+            } else if (match.startsWith('{')) {
+                acc.includes.push(match.slice(1, -1).toLowerCase());
+            } else {
+                acc.includes.push(match.toLowerCase());
+            }
+            return acc;
+        }, {
+            includes: [],
+            excludes: []
+        });
+    }
+
+    function filteredByKW(results, {includes, excludes}){
+        // remove the stopwords in the includes array
+        includes = removeStopwords(includes)
+        return results.filter(result => {
+            const content = `${result.title} ${result.abstract}`.toLowerCase()
+
+            if (excludes.some(term => content.includes(term))) {
+                return false;
+            }
+
+            if (includes.some(term => content.includes(term))) {
+                return true;
+            }
+
+            return false
+        })
+    }
+
     // Function to highlight keywords in a text
     function highlightKeywords(text, keywords) {
         // Replace each keyword in the text with a highlighted version
@@ -54,42 +92,25 @@
 
     // search results
     let searchTerm = ""
-    $: searchTermProcessed = removeStopwords(searchTerm.toLowerCase().split(' ').filter(term => term !== ""))
     let searchResults
-    // $: console.log({searchTerm})
-    $: console.log({searchResults})
+    // $: console.log({searchResults})
+    $: keywords = removeStopwords(parseQuery(searchTerm).includes)
 
     $: if (searchTerm === "") {
         searchResults = awardsData.sort((a, b) => new Date(b.date) - new Date(a.date))
     } 
     else {
-        // First, split the searchTerm into tokens in an array when it is a long string
-        // After that, use removeStopwords() to remove the stop words in that array
-        // Lastly. loop through the token array to filter results that include the tokens in title or abstract
-        
-        const resultFiltered = searchTermProcessed.reduce((acc, term)=>{
-            const subset = awardsData.filter((result) =>
-                    // filter results with the search term in the title or abstract
-                    result.title.toLowerCase().includes(term) || 
-                    result.abstract.toLowerCase().includes(term) 
-            )
-            return acc.concat(subset)
-        }, [])
-        // remove duplicates
-        searchResults = Array.from(new Set(resultFiltered))
+        searchResults = filteredByKW(awardsData, parseQuery(searchTerm))
 
         // highlight keywords
         searchResults.map(result =>{
-            result.title = highlightKeywords(result.title, searchTermProcessed)
-            result.abstract = highlightKeywords(result.abstract, searchTermProcessed)
+            result.title = highlightKeywords(result.title, keywords)
+            result.abstract = highlightKeywords(result.abstract, keywords)
     
         })
-
     }
 
     // filter results
-
-    // filters
     let programFilter = []
     let institutionFilter = []
     let investigatorFilter = []
@@ -99,7 +120,7 @@
         (institutionFilter.length === 0 || institutionFilter.includes(result.institution)) &&
         (investigatorFilter.length === 0 || investigatorFilter.includes(result.investigator))
     );
-    $: console.log(filteredResults)
+    // $: console.log(filteredResults)
 
 
     // sort results
@@ -109,55 +130,49 @@
     // convert dollar amount into number
     function convertAmount(str){ return parseFloat(str.replace(/[^0-9.-]+/g,""))}
 
-    function getMatchingKeywordCount(str, keywords) {
+    function getMatchingKeyword(str, keywords) {
         str = str.toLowerCase()
         return keywords.reduce((acc, keyword) => {
             return acc + (str.includes(keyword) ? 1 : 0);
         }, 0);
     }
 
-    function getTotalMatchingKeywordCount(str, keywords) {
+    function getTotalMatchingKeyword(str, keywords) {
         str = str.toLowerCase()
         return keywords.reduce((acc, keyword) => {
             return acc + (str.split(keyword).length - 1);
         }, 0);
     }
 
-    function getMatchingProgramCount(programs, programFilter) {
-        return [...new Set(programs)].filter((program) => [...new Set(programFilter)].includes(program)).length;
+    function getMatchingProgram(programs, programFilter) {
+        return programs.filter((program) => programFilter.includes(program)).length;
     }
 
-    
     // sort results based on conditions
-    function sortResults(results, sortingMethod){
+    function sortResults(results, keywords, programFilter, sortingMethod){
+
         switch (sortingMethod) {
             case 'relevance':
                 if(searchTerm != "" || programFilter.length > 0){
                     
                     return results.toSorted((a, b) => {
                             // first compare the total number of unique matching keywords in title and abstract plug the number of programs
-                            const relevanceA =
-                                getMatchingKeywordCount(a.title + a.abstract, searchTermProcessed) +
-                                getMatchingProgramCount(a.programs, programFilter);
-                            const relevanceB = 
-                                getMatchingKeywordCount(b.title + b.abstract, searchTermProcessed) +
-                                getMatchingProgramCount(b.programs, programFilter);
+                            const titleAndProgramComparison =
+                                (getMatchingKeyword(b.title + b.abstract, keywords) + getMatchingProgram(b.programs, programFilter)) - 
+                                (getMatchingKeyword(a.title + a.abstract, keywords) + getMatchingProgram(a.programs, programFilter))
 
-                            let results
+                            if (titleAndProgramComparison !== 0) return titleAndProgramComparison
+                            
+                            // for results have the same above number, compare the number of unique keywords in title
+                            const titleComparison = getMatchingKeyword(b.title, keywords) -
+                                                    getMatchingKeyword(a.title, keywords)
 
-                            // for results have the same above number, we compare the number of unique keywords in title
-                            // if the number of unique keywords in title is also the same, we compare the total number of keywords in title and abstract
-                            if(relevanceB - relevanceA === 0) {
-                                const titleComparison = getMatchingKeywordCount(b.title, searchTermProcessed) -
-                                                        getMatchingKeywordCount(a.title, searchTermProcessed);
-                                results = titleComparison !== 0 ? titleComparison : 
-                                        getTotalMatchingKeywordCount(b.title + b.abstract, searchTermProcessed) -
-                                        getTotalMatchingKeywordCount(a.title + a.abstract, searchTermProcessed);
-                            } else {
-                                results = relevanceB - relevanceA;
-                            }
-                            return results
+                            if (titleComparison !== 0) return titleComparison
 
+                            // if the number of unique keywords in title is also the same, compare the total number of keywords in title and abstract
+                            const totalMatchComparison = getTotalMatchingKeyword(b.title + b.abstract, keywords) -
+                                               getTotalMatchingKeyword(a.title + a.abstract, keywords);
+                            return totalMatchComparison
                             });
                     } else {
                     return results.toSorted((a, b) => new Date(b.date) - new Date(a.date));
@@ -177,7 +192,7 @@
         
     };
     
-    $: finalResults = sortResults(filteredResults, sortingMethod)
+    $: finalResults = sortResults(filteredResults, keywords, programFilter, sortingMethod)
 
    
 
@@ -203,7 +218,6 @@
 {:else}
     <main class="container">
         <section class="results">
-            
             {#if paginatedItems.length}
                 {#each paginatedItems as result}
                     <Result {...result} {programFilter}/>
@@ -222,23 +236,27 @@
                     <option value="amount - descending">Amount - Descending</option>
                 </select>
             </label>
-            <Filters {searchResults} {finalResults} bind:programFilter bind:institutionFilter bind:investigatorFilter/>
+            <Filters {searchResults} {finalResults} {filteredResults} bind:programFilter bind:institutionFilter bind:investigatorFilter/>
         </section>
     </main>
 
     {#if paginatedItems.length > 0}
-        <LightPaginationNav
-        totalItems="{items.length}"
-        pageSize="{pageSize}"
-        currentPage="{currentPage}"
-        limit="{1}"
-        showStepOptions="{true}"
-        on:setPage="{(e) => currentPage = e.detail.page}"
-        />
+        <footer>
+            <LightPaginationNav
+            totalItems="{items.length}"
+            pageSize="{pageSize}"
+            currentPage="{currentPage}"
+            limit="{1}"
+            showStepOptions="{true}"
+            on:setPage="{(e) => currentPage = e.detail.page}"
+            />
+        </footer>
     {/if}
 {/if}
 
 <style>
+
+
 
 .loader {
     display: flex;
@@ -256,17 +274,15 @@
 }
 
 .container {
-    /* width:80%; */
     padding: 0 2rem;
-    /* margin: auto; */
-    display:flex;
+    display: flex;
     justify-content: space-between;
+    align-items: start;
     gap: 4rem;
     margin-bottom: 2rem;
 }
 .results {
-    /* position: relative; */
-    /* width:100%; */
+    flex-basis: 70%;
     display:flex;
     flex-direction: column;
     gap:1.5rem;
@@ -285,16 +301,21 @@
 }
 
 .right-panel {
-    display:flex;
+    position: sticky;
+    top: 8rem;
+    /* flex-basis: 500px; */
+    flex-basis: 30%;
+    display: flex;
     flex-direction: column;
-    /* height:300px; */
-    width:30%;
-    min-width: 400px;
-    /* background-color: lightblue; */
-    /* border: 1px solid #000 */
-    
 }
 
+footer {
+    width: 100vw;
+    margin-bottom: 3rem;
+    /* left: 0;   */
+    margin-left: calc(50% - 50vw);  /* centers the separator and then pulls it to the left by half the viewport width */
+    margin-right: calc(50% - 50vw); /* centers the separator and then pulls it to the right by half the viewport width */
+}
 
 
 </style>

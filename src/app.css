@@ -9,4 +9,6 @@
 body {
   max-width: 1440px;
   margin: 0 auto;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }

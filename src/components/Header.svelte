@@ -46,6 +46,7 @@
 </header>
 <div class="separator"></div>
 
+
 <style>
 
     header {
@@ -59,6 +60,12 @@
         height: 5rem;
         /* border-bottom: 1px solid #E4E4E7; */
         /* margin-bottom: 3rem; */
+        position: sticky;
+        top: 0;
+        z-index: 1000; 
+        background-color: white;
+
+
     }
 
     .separator {
@@ -66,11 +73,14 @@
         display: block;
         height: 1px;  
         background-color: #E4E4E7; 
-        position: relative;
+        position: sticky;
+        top: 5rem;
         width: 100vw;  
-        left: 50%;
-        transform: translateX(-50%);  
+        left: 0;  
+        margin-left: calc(50% - 50vw);  /* centers the separator and then pulls it to the left by half the viewport width */
+        margin-right: calc(50% - 50vw); /* centers the separator and then pulls it to the right by half the viewport width */
         margin-bottom: 3rem;
+   
 
     }
 

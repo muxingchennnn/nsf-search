@@ -1,11 +1,13 @@
 <script>
   export let searchResults
   export let finalResults
+  export let filteredResults  
   export let programFilter
 
+  let start = Date.now();
   // Generate program filter list
   // Create an array of all programs (not unique)
-  $: allPrograms = searchResults.map((result) => result.programs).flat();
+  $: allPrograms = filteredResults.map((result) => result.programs).flat();
   // Create an object with the counts of each program
   $: programCounts = allPrograms.reduce((acc, curr) => {
       acc[curr] = (acc[curr] || 0) + 1;
@@ -17,7 +19,10 @@
       count: programCounts[program],
   }));
 
-  $: console.log(programDistribution)
+//   $: console.log(programDistribution)
+
+  let end = Date.now();
+  $: console.log(`program time taken: ${end - start} milliseconds`);
   
 </script>
 
