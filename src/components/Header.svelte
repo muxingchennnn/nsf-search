@@ -10,13 +10,17 @@
         return text.replace(/<span class="highlight" style="background-color: rgba\(250, 197, 21, 0.2\)">([^<]*)<\/span>/gi, '$1');
     }
 
-    function clickSearch() {
-        searchTerm = textInput
+    function updateSearchTerm() {
+        searchTerm = textInput;
+        
+        finalResults.map(result => {
+            result.title = removeHighlight(result.title);
+            result.abstract = removeHighlight(result.abstract);
+        });
+    }
 
-        finalResults.map(result =>{
-            result.title = removeHighlight(result.title)
-            result.abstract = removeHighlight(result.abstract)
-        })
+    function clickSearch() {
+        updateSearchTerm();
     }
 
     function pressEnter(event) {
@@ -24,11 +28,7 @@
         if (event.key === "Enter") {
             searchTerm = textInput
         }
-        
-        finalResults.map(result =>{
-            result.title = removeHighlight(result.title)
-            result.abstract = removeHighlight(result.abstract)
-        })
+        updateSearchTerm();
     }
 </script>
 

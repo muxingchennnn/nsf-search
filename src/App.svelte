@@ -10,21 +10,59 @@
     import { fade } from 'svelte/transition'
     import { SyncLoader } from 'svelte-loading-spinners';
 
-    let loadingTime;
+    
+    // loading state
     let isLoading = true;
-    let searchResult = [];
-
-    // data loading and parsing    
+    $:console.log(isLoading)
     let awardsData = []
+
     onMount(async()=>{
         awardsData = await dataLoading()
         isLoading = false;
+        // isLoading.set(false);
     })
 
     async function dataLoading() {
         const data = await d3.csv('/dataset/IIS Awards.csv', parseData)
         return data
     }
+
+
+    let searchTerm = ""
+    let keywords =[]
+    let exclusions =[]
+    let searchResults = []
+    let programFilter = []
+    let institutionFilter = []
+    let investigatorFilter = []
+    let sortingMethod = 'relevance';
+    let filteredResults =[]
+    let finalResults = []
+
+    $: keywords = removeStopwords(parseQuery(searchTerm).includes)
+    $: exclusions = parseQuery(searchTerm).excludes
+  
+    $: searchResults = filteredByKW(keywords, exclusions, awardsData) 
+        
+    $: filteredResults = searchResults.filter(result => 
+            (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
+            (institutionFilter.length === 0 || institutionFilter.includes(result.institution)) &&
+            (investigatorFilter.length === 0 || investigatorFilter.includes(result.investigator))
+        )
+        
+    $: finalResults = sortResults(filteredResults, keywords, programFilter, sortingMethod)
+
+   
+
+    
+   
+
+    // pagination
+    $: items = finalResults
+    let currentPage = 1
+    let pageSize = 10
+    $: paginatedItems = paginate({ items, pageSize, currentPage })
+
 
     function parseData(d){
         return{
@@ -40,9 +78,11 @@
             institution: d.Organization
         }
     }
-    $: console.log({awardsData})
 
     function parseQuery(query) {
+        // include seperate terms and phrases within a {} sign
+        // exclude terms or phrases with a - sign before
+        // return an includes array and an excludes array
         const matches = query.match(/-?\{.+?\}|[^ ]+/g) || [];
         
         return matches.reduce((acc, match) => {
@@ -60,87 +100,62 @@
             includes: [],
             excludes: []
         });
-    }
-
-    function filteredByKW(results, {includes, excludes}){
-        // remove the stopwords in the includes array
-        includes = removeStopwords(includes)
-        return results.filter(result => {
-            const content = `${result.title} ${result.abstract}`.toLowerCase()
-
-            if (excludes.some(term => content.includes(term))) {
-                return false;
-            }
-
-            if (includes.some(term => content.includes(term))) {
-                return true;
-            }
-
-            return false
-        })
+        
     }
 
     // Function to highlight keywords in a text
     function highlightKeywords(text, keywords) {
         // Replace each keyword in the text with a highlighted version
         keywords.forEach((keyword) => {
-        const regex = new RegExp(`(${keyword})`, "gi");
+        // const regex = new RegExp(`(${keyword})`, "gi");
+        const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
         text = text.replace(regex, '<span class="highlight" style="background-color: rgba(250, 197, 21, 0.2)">$1</span>');
         });
         return text;
     }
-
-    // search results
-    let searchTerm = ""
-    let searchResults
-    // $: console.log({searchResults})
-    $: keywords = removeStopwords(parseQuery(searchTerm).includes)
-
-    $: if (searchTerm === "") {
-        searchResults = awardsData.sort((a, b) => new Date(b.date) - new Date(a.date))
-    } 
-    else {
-        searchResults = filteredByKW(awardsData, parseQuery(searchTerm))
-
-        // highlight keywords
-        searchResults.map(result =>{
-            result.title = highlightKeywords(result.title, keywords)
-            result.abstract = highlightKeywords(result.abstract, keywords)
     
-        })
+    function filteredByKW(keywords, exclusions, data){
+        if (searchTerm === "") {
+            return awardsData.sort((a, b) => new Date(b.date) - new Date(a.date))
+        } 
+        else if (searchTerm !== "") {
+            const searchResults = awardsData.filter(award => {
+                const content = `${award.title} ${award.abstract}`.toLowerCase()
+
+                if (exclusions.some(term => content.includes(term))) {
+                    return false;
+                }
+
+                if (keywords.some(term => content.includes(term))) {
+                    return true;
+                }
+                return false
+            })
+
+            // highlight keywords
+            searchResults.map(result =>{
+                result.title = highlightKeywords(result.title, keywords)
+                result.abstract = highlightKeywords(result.abstract, keywords)
+            })
+            return searchResults
+            
+        }
     }
-
-    // filter results
-    let programFilter = []
-    let institutionFilter = []
-    let investigatorFilter = []
-
-    $: filteredResults = searchResults.filter(result => 
-        (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
-        (institutionFilter.length === 0 || institutionFilter.includes(result.institution)) &&
-        (investigatorFilter.length === 0 || investigatorFilter.includes(result.investigator))
-    );
-    // $: console.log(filteredResults)
-
-
-    // sort results
-    let sortingMethod = 'relevance';
-    $:console.log(sortingMethod)
 
     // convert dollar amount into number
     function convertAmount(str){ return parseFloat(str.replace(/[^0-9.-]+/g,""))}
 
     function getMatchingKeyword(str, keywords) {
-        str = str.toLowerCase()
+        const lowerStr = str.toLowerCase()
         return keywords.reduce((acc, keyword) => {
-            return acc + (str.includes(keyword) ? 1 : 0);
+            return acc + (lowerStr.includes(keyword) ? 1 : 0);
         }, 0);
     }
 
     function getTotalMatchingKeyword(str, keywords) {
-        str = str.toLowerCase()
+        const lowerStr = str.toLowerCase()
         return keywords.reduce((acc, keyword) => {
-            return acc + (str.split(keyword).length - 1);
+            return acc + (lowerStr.split(keyword).length - 1);
         }, 0);
     }
 
@@ -150,7 +165,6 @@
 
     // sort results based on conditions
     function sortResults(results, keywords, programFilter, sortingMethod){
-
         switch (sortingMethod) {
             case 'relevance':
                 if(searchTerm != "" || programFilter.length > 0){
@@ -171,7 +185,7 @@
 
                             // if the number of unique keywords in title is also the same, compare the total number of keywords in title and abstract
                             const totalMatchComparison = getTotalMatchingKeyword(b.title + b.abstract, keywords) -
-                                               getTotalMatchingKeyword(a.title + a.abstract, keywords);
+                                                         getTotalMatchingKeyword(a.title + a.abstract, keywords);
                             return totalMatchComparison
                             });
                     } else {
@@ -187,25 +201,10 @@
             case 'amount - descending':
                 return results.toSorted((a, b) => convertAmount(b.amount) - convertAmount(a.amount));
             break;
-            
         }
-        
     };
-    
-    $: finalResults = sortResults(filteredResults, keywords, programFilter, sortingMethod)
-
    
-
-    // pagination
-    $: items = finalResults
-    // $: console.log(items)
-    let currentPage = 1
-    let pageSize = 10
-    $: paginatedItems = paginate({ items, pageSize, currentPage })
-    $: console.log(paginatedItems)
-    
-
-
+    $:console.log(isLoading)
 </script>
 <Header bind:searchTerm bind:searchResults bind:finalResults/>
 
@@ -236,7 +235,7 @@
                     <option value="amount - descending">Amount - Descending</option>
                 </select>
             </label>
-            <Filters {searchResults} {finalResults} {filteredResults} bind:programFilter bind:institutionFilter bind:investigatorFilter/>
+            <Filters {searchResults} {finalResults} bind:filteredResults bind:programFilter bind:institutionFilter bind:investigatorFilter/>
         </section>
     </main>
 
