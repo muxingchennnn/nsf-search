@@ -26,9 +26,9 @@
     function pressEnter(event) {
         // Check if the 'return' key was pressed
         if (event.key === "Enter") {
-            searchTerm = textInput
+            updateSearchTerm();
         }
-        updateSearchTerm();
+        
     }
 </script>
 
