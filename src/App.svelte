@@ -218,25 +218,30 @@
 
 {:else}
     <main class="container">
-        <section class="results">
-            {#if paginatedItems.length}
-                {#each paginatedItems as result}
-                    <Result {...result} {programFilter}/>
-                {/each}
-            {:else}
-                <p>No results about "{searchTerm}"</p>
-            {/if}
+        <section class="left-panel">
+            <div class="sorting">
+                <p>{d3.format(",")(finalResults.length)} awards are found</p>
+                <label class="sort-by">
+                    Sort by:
+                    <select bind:value={sortingMethod} class="sort-by">
+                        <option value="relevance" >Relevance</option>
+                        <option value="date - descending" >Date - Descending</option>
+                        <option value="date - ascending">Date - Ascending</option>
+                        <option value="amount - descending">Amount - Descending</option>
+                    </select>
+                </label>
+            </div>
+            <div class="results">
+                {#if paginatedItems.length}
+                    {#each paginatedItems as result}
+                        <Result {...result} {programFilter}/>
+                    {/each}
+                {:else}
+                    <p>No results about "{searchTerm}"</p>
+                {/if}
+            </div>
         </section>
         <section class="right-panel">
-            <label class="sort sort-by">
-                Sort by:
-                <select bind:value={sortingMethod} class="sort-by">
-                    <option value="relevance" >Relevance</option>
-                    <option value="date - descending" >Date - Descending</option>
-                    <option value="date - ascending">Date - Ascending</option>
-                    <option value="amount - descending">Amount - Descending</option>
-                </select>
-            </label>
             <Filters {searchResults} {finalResults} bind:filteredResults bind:programFilter bind:institutionFilter bind:investigatorFilter/>
         </section>
     </main>
@@ -282,6 +287,19 @@
     gap: 4rem;
     margin-bottom: 2rem;
 }
+
+.sorting {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    font-family: Inter;
+    font-size: 1rem;
+    font-style: normal;
+    font-weight: 500;
+
+
+}
+
 .results {
     flex-basis: 70%;
     display:flex;
@@ -289,9 +307,6 @@
     gap:1.5rem;
 }
 
-.sort {
-    padding-bottom: 2rem;
-}
 
 .sort-by{
     color: #000;
