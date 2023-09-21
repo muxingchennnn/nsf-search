@@ -80,26 +80,29 @@
     }
 
     function parseQuery(query) {
-        // Include separate terms and phrases within a "" sign
-        // Exclude terms or phrases with a - sign before
-        // Return an includes array and an excludes array
         const matches = query.match(/-?".+?"|[^ ]+/g) || [];
-        
-        return matches.reduce((acc, match) => {
+
+        return matches.reduce(
+            (acc, match) => {
+            let content = '';
             if (match.startsWith('-"')) {
-                acc.excludes.push(match.slice(2, -1).toLowerCase());
+                content = match.slice(2, -1).trim();
+                if (content) acc.excludes.push(content.toLowerCase());
             } else if (match.startsWith('-')) {
                 acc.excludes.push(match.slice(1).toLowerCase());
             } else if (match.startsWith('"')) {
-                acc.includes.push(match.slice(1, -1).toLowerCase());
+                content = match.slice(1, -1).trim();
+                if (content) acc.includes.push(content.toLowerCase());
             } else {
                 acc.includes.push(match.toLowerCase());
             }
             return acc;
-        }, {
+            },
+            {
             includes: [],
-            excludes: []
-        });
+            excludes: [],
+            }
+        );
     }
 
     // Function to highlight keywords in a text
