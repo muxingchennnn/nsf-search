@@ -2,12 +2,9 @@
     import ProgramFilter from "./ProgramFilter.svelte";
     import InstitutionFilter from "./InstitutionFilter.svelte";
     import InvestigatorFilter from "./InvestigatorFilter.svelte";
-    export let searchResults
+    import { searchResults } from "./stores"
     export let finalResults
     export let filteredResults
-    export let programFilter
-    export let institutionFilter
-    export let investigatorFilter
 
     let activeTab = 'program';
 
@@ -23,11 +20,11 @@
 <!-- Tab Content -->
 <div class="filter-list">
 {#if activeTab === 'program'}
-    <ProgramFilter bind:programFilter {searchResults} {finalResults} {filteredResults}/>
+    <ProgramFilter {searchResults} {finalResults} {filteredResults}/>
 {:else if activeTab === 'institution'}
-    <InstitutionFilter bind:institutionFilter {searchResults} {finalResults} {filteredResults}/>
+    <InstitutionFilter {searchResults} {finalResults} {filteredResults}/>
 {:else if activeTab === 'investigator'}
-    <InvestigatorFilter bind:investigatorFilter {searchResults} {finalResults} {filteredResults}/>
+    <InvestigatorFilter {searchResults} {finalResults} {filteredResults}/>
 {/if}
 </div>
 <span class="reminder">scroll to see more &darr;</span>

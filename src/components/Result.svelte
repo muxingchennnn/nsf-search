@@ -1,11 +1,12 @@
 <script>
+    export let awardNumber
     export let programs
     export let investigator
     export let title
     export let abstract
     export let date
     export let amount
-    export let programFilter
+    import { selectedProgram } from "./stores"
 
     $: programList = programs
     
@@ -14,7 +15,8 @@
 
 
 <div class="result">
-    <p class="title">{@html title}</p>
+    <a class="title" href={`https://www.nsf.gov/awardsearch/showAward?AWD_ID=${awardNumber}&HistoricalAwards=false`} target="_blank" rel="noopener noreferrer">{@html title}</a>
+    <!-- <p class="title">{@html title}</p> -->
     <div class="subline">
         <span>{date}</span>
         <span>·</span>
@@ -22,7 +24,7 @@
         <span>·</span>
         {#if !programList.includes('')}
             {#each programList as program}
-                {#if programFilter.includes(program)}
+                {#if $selectedProgram.includes(program)}
                     <span class="program program-selected">{program}</span>
                     <span>·</span>
                 {:else}
@@ -55,6 +57,8 @@
     line-height: 150%; /* 24px */
 
     margin-bottom: 0.2rem;
+    display: block;
+    text-decoration: none;
 }
 
 .subline {

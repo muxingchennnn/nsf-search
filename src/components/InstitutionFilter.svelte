@@ -1,17 +1,16 @@
 <script>
-  export let searchResults
   export let finalResults
   export let filteredResults
-  export let institutionFilter
+  import { searchResults, selectedInstitution } from "./stores"
 
 
   let start = Date.now();
   // Generate program filter list
-  const uniqueInstitution = [...new Set(searchResults.map((result) => result.institution))];
+  const uniqueInstitution = [...new Set(finalResults.map((result) => result.institution))];
   // $: console.log({uniqueInstitution})
  
   // Create an object with the counts of each institution
-  $: institutionCounts = filteredResults
+  $: institutionCounts = finalResults
       .map((result) => result.institution)
       .reduce((acc, curr) => {
         acc[curr] = (acc[curr] || 0) + 1;
@@ -38,7 +37,7 @@
             type="checkbox"
             name="institution"
             value={institution.institution} 
-            bind:group={institutionFilter}
+            bind:group={$selectedInstitution}
         />
         &nbsp;{institution.institution} ({institution.count})
     </label>

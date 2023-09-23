@@ -1,19 +1,18 @@
 <script>
-  export let searchResults
   export let finalResults
   export let filteredResults
-  export let investigatorFilter
+  import { searchResults, selectedInvestigator } from "./stores"
 
   let start = Date.now();
   // Generate program filter list
-  const uniqueInvestigator = [...new Set(searchResults.map((result) => result.investigator))];
+  const uniqueInvestigator = [...new Set(finalResults.map((result) => result.investigator))];
   console.log(uniqueInvestigator.length)
   
   // Create an array of all institutions
   // $: allInstitution = finalResults.map((result) => result.institution);
   // $: console.log({allInstitution})
   // Create an object with the counts of each institution
-  $: investigatorCounts = filteredResults
+  $: investigatorCounts = finalResults
       .map((result) => result.investigator)
       .reduce((acc, curr) => {
         acc[curr] = (acc[curr] || 0) + 1;
@@ -39,7 +38,7 @@
             type="checkbox"
             name="investigator"
             value={investigator.investigator} 
-            bind:group={investigatorFilter}
+            bind:group={$selectedInvestigator}
         />
         &nbsp;{investigator.investigator} ({investigator.count})
     </label>

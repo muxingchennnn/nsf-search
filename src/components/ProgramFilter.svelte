@@ -1,13 +1,12 @@
 <script>
     import {onMount} from "svelte"
-    export let searchResults
     export let finalResults
     export let filteredResults  
-    export let programFilter
+    import { searchResults, selectedProgram } from "./stores"
 
     // Generate program filter list
     // Create an array of all programs (not unique)
-    $: allPrograms = filteredResults.map((result) => result.programs).flat();
+    $: allPrograms = finalResults.map((result) => result.programs).flat();
     // Create an object with the counts of each program
     $: console.log(allPrograms.length)
     $: programCounts = allPrograms.reduce((acc, curr) => {
@@ -43,7 +42,7 @@
             type="checkbox"
             name="program"
             value={program.program} 
-            bind:group={programFilter}
+            bind:group={$selectedProgram}
     
         />
         &nbsp;{program.program} ({program.count})

@@ -1,6 +1,5 @@
 <script>
     export let searchTerm
-    export let searchedResults
     export let finalResults
     
     let textInput=""
@@ -20,12 +19,14 @@
     }
 
     function clickSearch() {
+        console.log("Click!")
         updateSearchTerm();
     }
 
     function pressEnter(event) {
         // Check if the 'return' key was pressed
         if (event.key === "Enter") {
+            console.log("Press!")
             updateSearchTerm();
         }
         
@@ -36,7 +37,7 @@
     <span class="logo">NSF AWARDS</span>
     <div class="search-bar">
         <!-- <input type="text" id="searchBar" placeholder="Human-Centered Computing" bind:value = {searchTerm}> -->
-        <input type="text" id="searchBar" placeholder="Human-Centered Computing" bind:value = {textInput} on:keydown={pressEnter}>
+        <input type="text" id="searchBar" placeholder='e.g. "data visualization"' bind:value = {textInput} on:keydown={pressEnter}>
         <button class="btn--search" on:click={clickSearch}>Search</button>
     </div>
     <div class="btn-group">

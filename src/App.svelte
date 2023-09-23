@@ -5,20 +5,20 @@
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
-    import {onMount} from "svelte"
+    import {onMount, beforeUpdate, afterUpdate} from "svelte"
     import { removeStopwords } from 'stopword'
     import { fade } from 'svelte/transition'
     import { SyncLoader } from 'svelte-loading-spinners';
-
+    import { isLoading, searchResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
     
     // loading state
-    let isLoading = true;
-    $:console.log(isLoading)
+    // let isLoading = true;
+    $:console.log($isLoading)
     let awardsData = []
 
     onMount(async()=>{
         awardsData = await dataLoading()
-        isLoading = false;
+        $isLoading = false
         // isLoading.set(false);
     })
 
@@ -27,30 +27,28 @@
         return data
     }
 
-
     let searchTerm = ""
     let keywords =[]
     let exclusions =[]
-    let searchResults = []
-    let programFilter = []
-    let institutionFilter = []
-    let investigatorFilter = []
+    // let searchResults = []
     let sortingMethod = 'relevance';
     let filteredResults =[]
     let finalResults = []
 
     $: keywords = removeStopwords(parseQuery(searchTerm).includes)
     $: exclusions = parseQuery(searchTerm).excludes
-  
-    $: searchResults = filteredByKW(keywords, exclusions, awardsData) 
+    $: {
+        $searchResults = filteredByKW(keywords, exclusions, awardsData)
+    }
         
-    $: filteredResults = searchResults.filter(result => 
-            (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program))) && 
-            (institutionFilter.length === 0 || institutionFilter.includes(result.institution)) &&
-            (investigatorFilter.length === 0 || investigatorFilter.includes(result.investigator))
+    $: filteredResults = $searchResults.filter(result => 
+            ($selectedProgram.length === 0 || $selectedProgram.some(program => result.programs.includes(program))) && 
+            ($selectedInstitution.length === 0 || $selectedInstitution.includes(result.institution)) &&
+            ($selectedInvestigator.length === 0 || $selectedInvestigator.includes(result.investigator))
         )
         
-    $: finalResults = sortResults(filteredResults, keywords, programFilter, sortingMethod)
+    $: finalResults = $searchResults.length > 0 ? sortResults(filteredResults, keywords, $selectedProgram, sortingMethod) : awardsData
+    $: console.log(finalResults)
 
    
 
@@ -107,12 +105,14 @@
 
     // Function to highlight keywords in a text
     function highlightKeywords(text, keywords) {
+        
         // Replace each keyword in the text with a highlighted version
         keywords.forEach((keyword) => {
         // const regex = new RegExp(`(${keyword})`, "gi");
         const regex = new RegExp(`\\b(${keyword})\\b`, "gi");
         text = text.replace(regex, '<span class="highlight" style="background-color: rgba(250, 197, 21, 0.2)">$1</span>');
         });
+        $isLoading = false
         return text;
     }
     
@@ -121,7 +121,7 @@
             return awardsData.sort((a, b) => new Date(b.date) - new Date(a.date))
         } 
         else if (searchTerm !== "") {
-            const searchResults = awardsData.filter(award => {
+            const search = awardsData.filter(award => {
                 const content = `${award.title} ${award.abstract}`.toLowerCase()
 
                 if (exclusions.some(term => content.includes(term))) {
@@ -135,12 +135,11 @@
             })
 
             // highlight keywords
-            searchResults.map(result =>{
+            search.map(result =>{
                 result.title = highlightKeywords(result.title, keywords)
                 result.abstract = highlightKeywords(result.abstract, keywords)
             })
-            return searchResults
-            
+            return search
         }
     }
 
@@ -161,21 +160,21 @@
         }, 0);
     }
 
-    function getMatchingProgram(programs, programFilter) {
-        return programs.filter((program) => programFilter.includes(program)).length;
+    function getMatchingProgram(programs, $selectedProgram) {
+        return programs.filter((program) => $selectedProgram.includes(program)).length;
     }
 
     // sort results based on conditions
-    function sortResults(results, keywords, programFilter, sortingMethod){
+    function sortResults(results, keywords, $selectedProgram, sortingMethod){
         switch (sortingMethod) {
             case 'relevance':
-                if(searchTerm != "" || programFilter.length > 0){
+                if(searchTerm != "" || $selectedProgram.length > 0){
                     
                     return results.toSorted((a, b) => {
                             // first compare the total number of unique matching keywords in title and abstract plug the number of programs
                             const titleAndProgramComparison =
-                                (getMatchingKeyword(b.title + b.abstract, keywords) + getMatchingProgram(b.programs, programFilter)) - 
-                                (getMatchingKeyword(a.title + a.abstract, keywords) + getMatchingProgram(a.programs, programFilter))
+                                (getMatchingKeyword(b.title + b.abstract, keywords) + getMatchingProgram(b.programs, $selectedProgram)) - 
+                                (getMatchingKeyword(a.title + a.abstract, keywords) + getMatchingProgram(a.programs, $selectedProgram))
 
                             if (titleAndProgramComparison !== 0) return titleAndProgramComparison
                             
@@ -208,9 +207,9 @@
    
     $:console.log(isLoading)
 </script>
-<Header bind:searchTerm bind:searchResults bind:finalResults/>
+<Header bind:searchTerm bind:finalResults/>
 
-{#if isLoading}
+{#if $isLoading}
     <div class="loader" transition:fade>
         <p>Loading...</p>
         <SyncLoader size="2" color="#2E90FA" unit="rem" duration="1s" />
@@ -220,7 +219,11 @@
     <main class="container">
         <section class="left-panel">
             <div class="sorting">
-                <p>{d3.format(",")(finalResults.length)} awards are found</p>
+                {#if $searchResults.length > 0}
+                    <p>{d3.format(",")(finalResults.length)} awards are found</p>
+                {:else}
+                    <p>Sorry, there are no awards about {searchTerm}</p>
+                {/if}
                 <label class="sort-by">
                     Sort by:
                     <select bind:value={sortingMethod} class="sort-by">
@@ -232,17 +235,14 @@
                 </label>
             </div>
             <div class="results">
-                {#if paginatedItems.length}
-                    {#each paginatedItems as result}
-                        <Result {...result} {programFilter}/>
-                    {/each}
-                {:else}
-                    <p>No results about "{searchTerm}"</p>
-                {/if}
+                {#each paginatedItems as result}
+                    <Result {...result}/>
+                {/each}
             </div>
+            
         </section>
         <section class="right-panel">
-            <Filters {searchResults} {finalResults} bind:filteredResults bind:programFilter bind:institutionFilter bind:investigatorFilter/>
+            <Filters {finalResults} bind:filteredResults />
         </section>
     </main>
 
