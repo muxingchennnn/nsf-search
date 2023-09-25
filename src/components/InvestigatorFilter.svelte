@@ -2,37 +2,43 @@
   export let finalResults
   export let filteredResults
   import { searchResults, selectedInvestigator } from "./stores"
+  import { nanoid } from 'nanoid'
 
-  let start = Date.now();
-  // Generate program filter list
-  const uniqueInvestigator = [...new Set(finalResults.map((result) => result.investigator))];
-  console.log(uniqueInvestigator.length)
-  
-  // Create an array of all institutions
-  // $: allInstitution = finalResults.map((result) => result.institution);
-  // $: console.log({allInstitution})
-  // Create an object with the counts of each institution
-  $: investigatorCounts = finalResults
-      .map((result) => result.investigator)
-      .reduce((acc, curr) => {
-        acc[curr] = (acc[curr] || 0) + 1;
-        return acc;
-      }, {});
+  let investigatorOrder = null;
 
-  // Create an array of objects with the unique institutions and their counts
-  $: investigatorDistribution = uniqueInvestigator
-      .map(key => ({
-        investigator: key,
-        count: investigatorCounts[key] || 0
-      }))
-      .sort((a, b) => b.count - a.count);
-  
- let end = Date.now();
- $: console.log(`investigator time taken: ${end - start} milliseconds`);
+  const countInvestigators = (results) => {
+    return results.reduce((acc, result) => {
+      const { investigator } = result;
+      acc[investigator] = (acc[investigator] || 0) + 1;
+      return acc;
+    }, {});
+  };
+
+  const calculateInvestigatorDistribution = (results) => {
+    const investigatorCounts = countInvestigators(results);
+
+    if (!investigatorOrder) {
+      investigatorOrder = Object.keys(investigatorCounts)
+        .map(investigator => ({
+          investigator,
+          count: investigatorCounts[investigator]
+        }))
+        .sort((a, b) => b.count - a.count)
+        .map(({ investigator }) => investigator);
+    }
+
+    return investigatorOrder.map(investigator => ({
+      investigator,
+      count: investigatorCounts[investigator] || 0
+    }));
+  };
+
+  $: investigatorDistribution = calculateInvestigatorDistribution(finalResults);
+
   
 </script>
 
-{#each investigatorDistribution as investigator}
+{#each investigatorDistribution as investigator (nanoid())}
     <label>
         <input 
             type="checkbox"
@@ -40,6 +46,9 @@
             value={investigator.investigator} 
             bind:group={$selectedInvestigator}
         />
-        &nbsp;{investigator.investigator} ({investigator.count})
+        &nbsp;{investigator.investigator}
+        {#if investigator.count > 0}
+          ({investigator.count})
+        {/if} 
     </label>
 {/each}

@@ -3,40 +3,47 @@
     export let finalResults
     export let filteredResults  
     import { searchResults, selectedProgram } from "./stores"
+    import { nanoid } from 'nanoid'
 
-    // Generate program filter list
-    // Create an array of all programs (not unique)
-    $: allPrograms = finalResults.map((result) => result.programs).flat();
-    // Create an object with the counts of each program
-    $: console.log(allPrograms.length)
-    $: programCounts = allPrograms.reduce((acc, curr) => {
-        acc[curr] = (acc[curr] || 0) + 1;
+    let programOrder = null;
+
+    const countPrograms = (results) => {
+      const allPrograms = results.map((result) => result.programs).flat();
+      console.log(allPrograms.length);
+
+      return allPrograms.reduce((acc, program) => {
+        acc[program] = (acc[program] || 0) + 1;
         return acc;
-    }, {});
-    $: console.log(programCounts)
-    // Create an array of objects with the unique program values and their counts
-    $: programDistribution = Object.keys(programCounts).map(program => ({
+      }, {});
+    };
+
+    const calculateProgramDistribution = (results) => {
+      const programCounts = countPrograms(results);
+
+      if (!programOrder) {
+        programOrder = Object.keys(programCounts)
+          .map(program => ({
+            program,
+            count: programCounts[program]
+          }))
+          .sort((a, b) => b.count - a.count)
+          .map(({ program }) => program);
+      }
+
+      console.log(programOrder.length)
+
+      return programOrder.map(program => ({
         program,
-        count: programCounts[program],
-    }));
+        count: programCounts[program] || 0
+      }));
+    };
 
-    //   $: console.log(programDistribution)
-
-    $: programOrdering = programDistribution.sort((a, b) => b.count - a.count)
-
-    // function updateProgram(){
-    // console.log("updates!")
-    // filteredResults = finalResults.filter(result => 
-    //     (programFilter.length === 0 || programFilter.some(program => result.programs.includes(program)))
-    // );
-    // }
-
-    // console.log(list.length)
+    $: programDistribution = calculateProgramDistribution(finalResults);
 
 
 </script>
 
-{#each programOrdering as program}
+{#each programDistribution as program (nanoid())}
     <label>
         <input 
             type="checkbox"

@@ -7,6 +7,7 @@
     export let date
     export let amount
     import { selectedProgram } from "./stores"
+    import { nanoid } from 'nanoid'
 
     $: programList = programs
     
@@ -23,7 +24,7 @@
         <span>{investigator}</span>
         <span>·</span>
         {#if !programList.includes('')}
-            {#each programList as program}
+            {#each programList as program (nanoid())}
                 {#if $selectedProgram.includes(program)}
                     <span class="program program-selected">{program}</span>
                     <span>·</span>
