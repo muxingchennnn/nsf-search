@@ -5,11 +5,11 @@
     import * as d3 from 'd3';
     import moment from 'moment';
     import { paginate, LightPaginationNav } from 'svelte-paginate'
-    import {onMount, beforeUpdate, afterUpdate} from "svelte"
+    import { onMount, beforeUpdate, afterUpdate } from "svelte"
     import { removeStopwords } from 'stopword'
     import { fade } from 'svelte/transition'
     import { SyncLoader } from 'svelte-loading-spinners';
-    import { isLoading, searchResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
+    import { isLoading, searchResults, finalResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
     
     // loading state
     // let isLoading = true;
@@ -22,6 +22,7 @@
         // isLoading.set(false);
     })
 
+
     async function dataLoading() {
         const data = await d3.csv('/dataset/IIS Awards.csv', parseData)
         return data
@@ -33,7 +34,7 @@
     // let searchResults = []
     let sortingMethod = 'relevance';
     let filteredResults =[]
-    let finalResults = []
+    // let finalResults = []
 
     $: keywords = removeStopwords(parseQuery(searchTerm).includes)
     $: exclusions = parseQuery(searchTerm).excludes
@@ -47,8 +48,8 @@
             ($selectedInvestigator.length === 0 || $selectedInvestigator.includes(result.investigator))
         )
         
-    $: finalResults = $searchResults.length > 0 ? sortResults(filteredResults, keywords, $selectedProgram, sortingMethod) : awardsData
-    $: console.log(finalResults)
+    $: $finalResults = $searchResults.length > 0 ? sortResults(filteredResults, keywords, $selectedProgram, sortingMethod) : awardsData
+    // $: console.log(finalResults)
 
    
 
@@ -56,7 +57,7 @@
    
 
     // pagination
-    $: items = finalResults
+    $: items = $finalResults
     let currentPage = 1
     let pageSize = 10
     $: paginatedItems = paginate({ items, pageSize, currentPage })
@@ -207,58 +208,56 @@
    
     $:console.log(isLoading)
 </script>
-<Header bind:searchTerm bind:finalResults/>
+<Header bind:searchTerm />
 
 {#if $isLoading}
     <div class="loader" transition:fade>
         <p>Loading...</p>
         <SyncLoader size="2" color="#2E90FA" unit="rem" duration="1s" />
     </div>
-
-{:else}
-    <main class="container">
-        <section class="left-panel">
-            <div class="sorting">
-                {#if $searchResults.length > 0}
-                    <p>{d3.format(",")(finalResults.length)} awards are found</p>
-                {:else}
-                    <p>Sorry, there are no awards about {searchTerm}</p>
-                {/if}
-                <label class="sort-by">
-                    Sort by:
-                    <select bind:value={sortingMethod} class="sort-by">
-                        <option value="relevance" >Relevance</option>
-                        <option value="date - descending" >Date - Descending</option>
-                        <option value="date - ascending">Date - Ascending</option>
-                        <option value="amount - descending">Amount - Descending</option>
-                    </select>
-                </label>
-            </div>
-            <div class="results">
-                {#each paginatedItems as result}
-                    <Result {...result}/>
-                {/each}
-            </div>
-            
-        </section>
-        <section class="right-panel">
-            <Filters {finalResults} bind:filteredResults />
-        </section>
-    </main>
-
-    {#if paginatedItems.length > 0}
-        <footer>
-            <LightPaginationNav
-            totalItems="{items.length}"
-            pageSize="{pageSize}"
-            currentPage="{currentPage}"
-            limit="{1}"
-            showStepOptions="{true}"
-            on:setPage="{(e) => currentPage = e.detail.page}"
-            />
-        </footer>
-    {/if}
 {/if}
+<main class="container">
+    <section class="left-panel">
+        <div class="sorting">
+            {#if $searchResults.length > 0}
+                <p>{d3.format(",")($finalResults.length)} awards are found</p>
+            {:else}
+                <p>Sorry, there are no awards about {searchTerm}</p>
+            {/if}
+            <label class="sort-by">
+                Sort by:
+                <select bind:value={sortingMethod} class="sort-by">
+                    <option value="relevance" >Relevance</option>
+                    <option value="date - descending" >Date - Descending</option>
+                    <option value="date - ascending">Date - Ascending</option>
+                    <option value="amount - descending">Amount - Descending</option>
+                </select>
+            </label>
+        </div>
+        <div class="results">
+            {#each paginatedItems as result}
+                <Result {...result}/>
+            {/each}
+        </div>
+    </section>
+    <section class="right-panel">
+        <Filters />
+    </section>
+</main>
+
+{#if paginatedItems.length > 0}
+    <footer>
+        <LightPaginationNav
+        totalItems="{items.length}"
+        pageSize="{pageSize}"
+        currentPage="{currentPage}"
+        limit="{1}"
+        showStepOptions="{true}"
+        on:setPage="{(e) => currentPage = e.detail.page}"
+        />
+    </footer>
+{/if}
+
 
 <style>
 
@@ -271,12 +270,13 @@
 	justify-content: center;
 	position: absolute;
     inset: 0;
-    background: rgb(255 255 255 / .9);
+    background: rgb(255 255 255);
 
     font-family: Inter;
     font-size: 1rem;
     font-style: normal;
     font-weight: 400;
+    z-index: 3;
 }
 
 .container {

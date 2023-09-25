@@ -1,11 +1,8 @@
 <script>
-  export let finalResults
-  export let filteredResults
-  import { searchResults, selectedInstitution } from "./stores"
+  import { isLoading, searchResults, finalResults, selectedInstitution } from "./stores"
   import { nanoid } from 'nanoid'
+  import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte"
 
-
-  let institutionOrder = null;
 
   const countInstitutions = (results) => {
     return results.reduce((acc, result) => {
@@ -14,6 +11,21 @@
       return acc;
     }, {});
   };
+
+  let institutionOrder = null;
+
+  $: if ($searchResults) {
+    const institutionCounts = countInstitutions($searchResults);
+
+    institutionOrder = Object.keys(institutionCounts)
+      .map(institution => ({
+        institution,
+        count: institutionCounts[institution]
+      }))
+      .sort((a, b) => b.count - a.count)
+      .map(({ institution }) => institution);
+  }
+
 
   const calculateInstitutionDistribution = (results) => {
     const institutionCounts = countInstitutions(results);
@@ -34,8 +46,10 @@
     }));
   };
 
-  $: institutionDistribution = calculateInstitutionDistribution(finalResults);
+  $: institutionDistribution = calculateInstitutionDistribution($finalResults);
   $: console.log({ institutionDistribution });
+  $: console.log($selectedInstitution)
+  
   
 </script>
 
@@ -46,7 +60,6 @@
             name="institution"
             value={institution.institution} 
             bind:group={$selectedInstitution}
-            
         />
         &nbsp;{institution.institution}
         {#if institution.count > 0}

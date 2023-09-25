@@ -2,29 +2,24 @@
     import ProgramFilter from "./ProgramFilter.svelte";
     import InstitutionFilter from "./InstitutionFilter.svelte";
     import InvestigatorFilter from "./InvestigatorFilter.svelte";
-    import { searchResults } from "./stores"
-    export let finalResults
-    export let filteredResults
-
-    let activeTab = 'program';
-
+    import { searchResults, activeTab } from "./stores"
 </script>
 
 <!-- Tab Headers -->
 <div class="tabs">
-    <div class="tab {activeTab === 'program' ? 'active' : ''}" on:click={() => activeTab = 'program'}>Program</div>
-    <div class="tab {activeTab === 'institution' ? 'active' : ''}" on:click={() => activeTab = 'institution'}>Institution</div>
-    <div class="tab {activeTab === 'investigator' ? 'active' : ''}" on:click={() => activeTab = 'investigator'}>Investigator</div>
+    <div class="tab {$activeTab === 'program' ? 'active' : ''}" on:click={() => $activeTab = 'program'}>Program</div>
+    <div class="tab {$activeTab === 'institution' ? 'active' : ''}" on:click={() => $activeTab = 'institution'}>Institution</div>
+    <div class="tab {$activeTab === 'investigator' ? 'active' : ''}" on:click={() => $activeTab = 'investigator'}>Investigator</div>
 </div>
 
 <!-- Tab Content -->
 <div class="filter-list">
-{#if activeTab === 'program'}
-    <ProgramFilter {searchResults} {finalResults} {filteredResults}/>
-{:else if activeTab === 'institution'}
-    <InstitutionFilter {searchResults} {finalResults} {filteredResults}/>
-{:else if activeTab === 'investigator'}
-    <InvestigatorFilter {searchResults} {finalResults} {filteredResults}/>
+{#if $activeTab === 'program'}
+    <ProgramFilter />
+{:else if $activeTab === 'institution'}
+    <InstitutionFilter />
+{:else if $activeTab === 'investigator'}
+    <InvestigatorFilter />
 {/if}
 </div>
 <span class="reminder">scroll to see more &darr;</span>

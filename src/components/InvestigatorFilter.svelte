@@ -1,10 +1,7 @@
 <script>
-  export let finalResults
-  export let filteredResults
-  import { searchResults, selectedInvestigator } from "./stores"
+  import { isLoading, searchResults, finalResults, selectedInvestigator } from "./stores"
   import { nanoid } from 'nanoid'
-
-  let investigatorOrder = null;
+  import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte"
 
   const countInvestigators = (results) => {
     return results.reduce((acc, result) => {
@@ -13,6 +10,20 @@
       return acc;
     }, {});
   };
+
+  let investigatorOrder = null;
+
+  $: if ($searchResults) {
+    const investigatorCounts = countInvestigators($searchResults);
+
+    investigatorOrder = Object.keys(investigatorCounts)
+      .map(investigator => ({
+        investigator,
+        count: investigatorCounts[investigator]
+      }))
+      .sort((a, b) => b.count - a.count)
+      .map(({ investigator }) => investigator);
+  }
 
   const calculateInvestigatorDistribution = (results) => {
     const investigatorCounts = countInvestigators(results);
@@ -33,7 +44,7 @@
     }));
   };
 
-  $: investigatorDistribution = calculateInvestigatorDistribution(finalResults);
+  $: investigatorDistribution = calculateInvestigatorDistribution($finalResults);
 
   
 </script>
