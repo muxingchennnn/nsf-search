@@ -82,7 +82,18 @@
         />
         &nbsp;{institution.institution}
         {#if institution.count > 0}
-          ({institution.count})
+          <span>({institution.count})</span>
         {/if}
     </label>
 {/each}
+
+<style>
+
+span {
+  font-family: 'Roboto Condense', sans-serif;
+  font-size: .8rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+</style>

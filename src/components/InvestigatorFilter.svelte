@@ -79,7 +79,18 @@
         />
         &nbsp;{investigator.investigator}
         {#if investigator.count > 0}
-          ({investigator.count})
+          <span>({investigator.count})</span>
         {/if} 
     </label>
 {/each}
+
+<style>
+
+span {
+  font-family: 'Roboto Condense', sans-serif;
+  font-size: .8rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+</style>
