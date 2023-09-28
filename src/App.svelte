@@ -9,19 +9,28 @@
     import { removeStopwords } from 'stopword'
     import { fade } from 'svelte/transition'
     import { SyncLoader } from 'svelte-loading-spinners';
-    import { isLoading, searchResults, finalResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
+    import { isLoading, activeTab, searchResults, finalResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
     
     // loading state
     // let isLoading = true;
     $:console.log($isLoading)
     let awardsData = []
 
+    // beforeUpdate(()=>{
+    //     console.log("App before update")
+    // })
+
     onMount(async()=>{
         awardsData = await dataLoading()
+        console.log("App has mounted")
         $isLoading = false
-        // isLoading.set(false);
+        
     })
 
+    // afterUpdate(()=>{
+    //     console.log("App finish load")
+    //     $isLoading = false
+    // })
 
     async function dataLoading() {
         const data = await d3.csv('/dataset/IIS Awards.csv', parseData)
@@ -216,6 +225,8 @@
         <SyncLoader size="2" color="#2E90FA" unit="rem" duration="1s" />
     </div>
 {/if}
+{#await awardsData}
+{:then data}
 <main class="container">
     <section class="left-panel">
         <div class="sorting">
@@ -257,6 +268,8 @@
         />
     </footer>
 {/if}
+{/await}
+
 
 
 <style>
@@ -264,6 +277,8 @@
 
 
 .loader {
+    /* width: 100vw;
+    height: calc(100vh - 5rem); */
     display: flex;
     flex-direction: column;
     align-items:center;
@@ -291,11 +306,14 @@
 .sorting {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
-    font-family: Inter;
-    font-size: 1rem;
+    
+    color:#424242;
+    font-family: 'Merriweather', serif;
+    font-size: .8rem;
     font-style: normal;
     font-weight: 500;
+
+    margin-bottom: 2rem;
 
 
 }
@@ -309,16 +327,16 @@
 
 
 .sort-by{
-    color: #000;
-    font-family: Inter;
-    font-size: 1rem;
+    color: #424242;
+    font-family: 'Merriweather', serif;
+    font-size: .8rem;
     font-style: normal;
     font-weight: 400;
 }
 
 .right-panel {
     position: sticky;
-    top: 8rem;
+    top: 7rem;
     /* flex-basis: 500px; */
     flex-basis: 30%;
     display: flex;

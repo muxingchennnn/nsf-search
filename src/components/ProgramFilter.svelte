@@ -1,19 +1,15 @@
 <script>
-    import { onMount, onDestroy, beforeUpdate } from "svelte"
-    import { isLoading, searchResults, finalResults, selectedProgram } from "./stores"
+    import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte"
+    import { isLoading, searchResults, finalResults, 
+    selectedProgram, selectedInstitution, selectedInvestigator, 
+    programOrderInitialized, institutionOrderInitialized, investigatorOrderInitialized, 
+    programOrder} from "./stores"
     import { nanoid } from 'nanoid'
 
-    // onDestroy(()=>{
-    // console.log("set isLoading to true")
-    //   $isLoading = true
-    // })
-
-    // onMount(()=>{
-    //   console.log("set isLoading to false")
-    //   $isLoading = false
-    // })
-
-    // let programOrder = null;
+    function handleInitialization() {
+      $institutionOrderInitialized = false
+      $investigatorOrderInitialized = false
+    }
 
     const countPrograms = (results) => {
       const allPrograms = results.map((result) => result.programs).flat();
@@ -25,44 +21,49 @@
       }, {});
     };
 
-    let programOrder = null;
-
-    $: if ($searchResults) {
+    // let programOrder = [];
+    let programDistribution =[];
+    
+    $: if ($finalResults.length > 0 && $selectedInstitution.length === 0 && $selectedInvestigator.length === 0) {
       const programCounts = countPrograms($searchResults);
 
-      programOrder = Object.keys(programCounts)
+      $programOrder = Object.keys(programCounts)
         .map(program => ({
           program,
           count: programCounts[program]
         }))
         .sort((a, b) => b.count - a.count)
         .map(({ program }) => program);
+
+      $programOrderInitialized = true;
+    } else if ($finalResults.length > 0 && ($selectedInstitution.length > 0 || $selectedInvestigator.length > 0) && !$programOrderInitialized) {
+      const programCounts = countPrograms($finalResults);
+
+      $programOrder = Object.keys(programCounts)
+        .map(program => ({
+          program,
+          count: programCounts[program]
+        }))
+        .sort((a, b) => b.count - a.count)
+        .map(({ program }) => program);
+
+      $programOrderInitialized = true;
     }
 
     const calculateProgramDistribution = (results) => {
       const programCounts = countPrograms(results);
 
-      if (!programOrder) {
-        programOrder = Object.keys(programCounts)
-          .map(program => ({
-            program,
-            count: programCounts[program]
-          }))
-          .sort((a, b) => b.count - a.count)
-          .map(({ program }) => program);
-      }
-
-        // console.log(programOrder.length)
-
-      return programOrder.map(program => ({
+      return $programOrder.map(program => ({
         program,
         count: programCounts[program] || 0
       }));
     };
 
-    $: programDistribution = calculateProgramDistribution($finalResults);
+    $: if ($finalResults.length > 0) {
+      programDistribution = calculateProgramDistribution($finalResults);
+    }
 
-
+    
 </script>
 
 {#each programDistribution as program (nanoid())}
@@ -72,8 +73,20 @@
             name="program"
             value={program.program} 
             bind:group={$selectedProgram}
+            on:click={handleInitialization}
     
         />
-        &nbsp;{program.program} ({program.count})
+        &nbsp;{program.program} <span>({program.count})</span>
     </label>
 {/each}
+
+<style>
+
+span {
+  font-family: 'Roboto Condense', sans-serif;
+  font-size: .8rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+</style>

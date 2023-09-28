@@ -1,8 +1,21 @@
 <script>
-  import { isLoading, searchResults, finalResults, selectedInstitution } from "./stores"
+  import { isLoading, searchResults, finalResults, selectedProgram, 
+  selectedInstitution, selectedInvestigator, 
+  programOrderInitialized, institutionOrderInitialized, investigatorOrderInitialized, institutionOrder } from "./stores"
   import { nanoid } from 'nanoid'
   import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte"
 
+
+  function handleInitialization(){
+    $programOrderInitialized = false
+    $investigatorOrderInitialized = false
+  }
+
+  $: console.log($programOrderInitialized)
+
+  onMount(()=>{
+    console.log($institutionOrder)
+  })
 
   const countInstitutions = (results) => {
     return results.reduce((acc, result) => {
@@ -12,43 +25,48 @@
     }, {});
   };
 
-  let institutionOrder = null;
+  let institutionDistribution = []
 
-  $: if ($searchResults) {
-    const institutionCounts = countInstitutions($searchResults);
+  $: if ($finalResults.length > 0 && $selectedProgram.length === 0 && $selectedInvestigator.length === 0) {
+      const institutionCounts = countInstitutions($searchResults);
 
-    institutionOrder = Object.keys(institutionCounts)
-      .map(institution => ({
-        institution,
-        count: institutionCounts[institution]
-      }))
-      .sort((a, b) => b.count - a.count)
-      .map(({ institution }) => institution);
-  }
-
-
-  const calculateInstitutionDistribution = (results) => {
-    const institutionCounts = countInstitutions(results);
-
-    if (!institutionOrder) {
-      institutionOrder = Object.keys(institutionCounts)
+      $institutionOrder = Object.keys(institutionCounts)
         .map(institution => ({
           institution,
           count: institutionCounts[institution]
         }))
         .sort((a, b) => b.count - a.count)
         .map(({ institution }) => institution);
-    }
+
+      $institutionOrderInitialized = true;
+    } else if ($finalResults.length > 0 && ($selectedProgram || $selectedInvestigator) && !$institutionOrderInitialized) {
+      const institutionCounts = countInstitutions($finalResults);
+
+      $institutionOrder = Object.keys(institutionCounts)
+        .map(institution => ({
+          institution,
+          count: institutionCounts[institution]
+        }))
+        .sort((a, b) => b.count - a.count)
+        .map(({ institution }) => institution);
+
+      $institutionOrderInitialized = true;
+    } 
     
-    return institutionOrder.map(institution => ({
+  const calculateInstitutionDistribution = (results) => {
+    const institutionCounts = countInstitutions(results);
+    
+    return $institutionOrder.map(institution => ({
       institution,
       count: institutionCounts[institution] || 0
     }));
   };
 
-  $: institutionDistribution = calculateInstitutionDistribution($finalResults);
-  $: console.log({ institutionDistribution });
-  $: console.log($selectedInstitution)
+
+  $: if ($finalResults.length > 0) {
+      institutionDistribution = calculateInstitutionDistribution($finalResults)}
+  
+  $: console.log($institutionOrder)
   
   
 </script>
@@ -60,10 +78,11 @@
             name="institution"
             value={institution.institution} 
             bind:group={$selectedInstitution}
+            on:click={handleInitialization}
         />
         &nbsp;{institution.institution}
         {#if institution.count > 0}
-          ({institution.count })
+          ({institution.count})
         {/if}
     </label>
 {/each}

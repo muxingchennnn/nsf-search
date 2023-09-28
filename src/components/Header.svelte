@@ -1,6 +1,6 @@
 <script>
     export let searchTerm
-    export let finalResults
+    import { finalResults } from "./stores"
     
     let textInput=""
 
@@ -12,7 +12,7 @@
     function updateSearchTerm() {
         searchTerm = textInput;
         
-        finalResults.map(result => {
+        $finalResults.map(result => {
             result.title = removeHighlight(result.title);
             result.abstract = removeHighlight(result.abstract);
         });
@@ -80,7 +80,7 @@
         left: 0;  
         margin-left: calc(50% - 50vw);  /* centers the separator and then pulls it to the left by half the viewport width */
         margin-right: calc(50% - 50vw); /* centers the separator and then pulls it to the right by half the viewport width */
-        margin-bottom: 3rem;
+        margin-bottom: 2rem;
    
 
     }
@@ -89,11 +89,12 @@
         min-width: 160px;
 
         color: #000;
-        font-family: Inter;
+        font-family: 'Roboto Condensed', sans-serif;
         font-size: 1.2rem;
         font-style: normal;
         font-weight: 700;
         line-height: 120%; /* 1.8rem */
+        letter-spacing: 0.15rem;
     }
 
     .search-bar {
@@ -114,7 +115,7 @@
         color: #1E1E1E;
 
         /* Text md/Regular */
-        font-family: Inter;
+        font-family: 'Roboto', sans-serif;
         font-size: 1rem;
         font-style: normal;
         font-weight: 400;
@@ -131,10 +132,10 @@
         color: #1E1E1E;
 
         /* Text md/Semibold */
-        font-family: Inter;
+        font-family: 'Roboto', sans-serif;
         font-size: 1rem;
         font-style: normal;
-        font-weight: 600;
+        font-weight: 400;
         line-height: 1.5rem; /* 150% */
     }
 
@@ -154,10 +155,10 @@
 
         color: var(--base-white, #FFF);
         /* Text md/Semibold */
-        font-family: Inter;
+        font-family: 'Roboto', sans-serif;
         font-size: 1rem;
         font-style: normal;
-        font-weight: 600;
+        font-weight: 400;
         line-height: 1.5rem; /* 150% */
     }
 
@@ -167,12 +168,12 @@
         border: 1px solid var(--blue-500, #2E90FA);
         background: #FFF;
 
-        color: #000;
+        color: #424242;
         /* Text md/Semibold */
-        font-family: Inter;
+        font-family: 'Roboto', sans-serif;
         font-size: 1rem;
         font-style: normal;
-        font-weight: 600;
+        font-weight: 400;
         line-height: 1.5rem; /* 150% */
     }
 

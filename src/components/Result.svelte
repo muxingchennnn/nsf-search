@@ -51,7 +51,7 @@
 
 .title {
     color: var(--blue-700, #175CD3);
-    font-family: Inter;
+    font-family: 'Merriweather', serif;;
     font-size: 1rem;
     font-style: normal;
     font-weight: 600;
@@ -69,7 +69,7 @@
     gap: 0.25rem;
 
     color: var(--grey-500, #70707B);
-    font-family: Inter;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.8rem;
     font-style: normal;
     font-weight: 400;
@@ -91,8 +91,8 @@
     -webkit-line-clamp: 3; /* limits the content to 3 lines */
     overflow: hidden;
 
-    color: #000;
-    font-family: Inter;
+    color: #424242;
+    font-family: 'Roboto', sans-serif;;
     font-size: 1rem;
     font-style: normal;
     font-weight: 400;
