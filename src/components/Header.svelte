@@ -34,16 +34,16 @@
 </script>
 
 <header>
-    <span class="logo">NSF AWARDS</span>
+    <span class="logo">NSF CISE AWARDS</span>
     <div class="search-bar">
         <!-- <input type="text" id="searchBar" placeholder="Human-Centered Computing" bind:value = {searchTerm}> -->
         <input type="text" id="searchBar" placeholder='e.g. "data visualization"' bind:value = {textInput} on:keydown={pressEnter}>
         <button class="btn--search" on:click={clickSearch}>Search</button>
     </div>
-    <div class="btn-group">
+    <!-- <div class="btn-group">
         <button class="btn--log-in">Log In</button>
         <button class="btn--sign-up">Sign Up</button>
-    </div>
+    </div> -->
 </header>
 <div class="separator"></div>
 
@@ -51,6 +51,7 @@
 <style>
 
     header {
+        max-width: 70%;
         padding: 1rem 2rem;
         display: flex;
         gap:4rem;
@@ -104,7 +105,7 @@
     }
 
     #searchBar {
-        max-width: 32rem;
+        max-width: 28rem;
         padding: 0.625rem 0.875rem;
         flex-grow:1;
         
