@@ -10,7 +10,7 @@
     import { fade } from 'svelte/transition'
     import { SyncLoader } from 'svelte-loading-spinners';
     import { isLoading, activeTab, searchResults, finalResults, selectedProgram, selectedInstitution, selectedInvestigator } from "./components/stores"
-    
+    import { inject } from '@vercel/analytics';
     // loading state
     // let isLoading = true;
     $:console.log($isLoading)
@@ -216,6 +216,8 @@
     };
    
     $:console.log(isLoading)
+
+    inject();
 </script>
 <Header bind:searchTerm />
 
