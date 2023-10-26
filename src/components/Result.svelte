@@ -51,7 +51,7 @@
 
 .title {
     color: var(--blue-700, #175CD3);
-    font-family: 'Merriweather', serif;;
+    font-family: 'Sohne', sans-serif;
     font-size: 1rem;
     font-style: normal;
     font-weight: 600;
@@ -69,7 +69,7 @@
     gap: 0.25rem;
 
     color: var(--grey-500, #70707B);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Sohne', sans-serif;
     font-size: 0.8rem;
     font-style: normal;
     font-weight: 400;
@@ -92,7 +92,7 @@
     overflow: hidden;
 
     color: #424242;
-    font-family: 'Roboto', sans-serif;;
+    font-family: 'Source Serif 4', serif;;
     font-size: 1rem;
     font-style: normal;
     font-weight: 400;
@@ -101,11 +101,13 @@
 
 .expand-btn {
     appearance: none;
+    background: none;
+    border: none;
     /* border: 1px solid #70707B; */
     /* padding: 0.2rem; */
     /* border-radius: 0.2rem; */
     cursor: pointer;
-    font-family: Inter;
+    font-family: 'Sohne', sans-serif;
     font-size: 0.7rem;
     font-style: normal;
     font-weight: 400;
@@ -115,8 +117,19 @@
     align-self: flex-end;
 }
 
-.expand-btn:hover {
-    background-color: var(--grey-200, #E4E4E7);
+.expand-btn:focus,
+.expand-btn:hover,
+.expand-btn:checked,
+.expand-btn:checked:hover,
+.expand-btn:checked:focus {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: none;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    box-shadow: none;
 }
 
 .expand-btn::before {

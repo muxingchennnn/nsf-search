@@ -5,7 +5,7 @@
     programOrderInitialized, institutionOrderInitialized, investigatorOrderInitialized, 
     programOrder} from "./stores"
     import { nanoid } from 'nanoid'
-
+    import VirtualList from '@sveltejs/svelte-virtual-list';
     function handleInitialization() {
       $institutionOrderInitialized = false
       $investigatorOrderInitialized = false
@@ -66,21 +66,32 @@
     
 </script>
 
-{#each programDistribution as program (nanoid())}
+<div class='container'>
+  <VirtualList items={programDistribution} let:item>
     <label>
-        <input 
-            type="checkbox"
-            name="program"
-            value={program.program} 
-            bind:group={$selectedProgram}
-            on:click={handleInitialization}
-    
-        />
-        &nbsp;{program.program} <span>({program.count})</span>
-    </label>
-{/each}
+      <input 
+          type="checkbox"
+          name="investigator"
+          value={item.program} 
+          bind:group={$selectedProgram}
+          on:click={handleInitialization}
+          
+      />
+      &nbsp;{item.program}
+      {#if item.count > 0}
+        <span>({item.count})</span>
+      {/if} 
+  </label>
+  </VirtualList>
+</div>
 
 <style>
+.container {
+		/* border-top: 1px solid #333; */
+		/* border-bottom: 1px solid #333; */
+		min-height: 200px;
+		height: calc(100vh - 15em);
+	}
 
 span {
   font-family: 'Roboto Condense', sans-serif;

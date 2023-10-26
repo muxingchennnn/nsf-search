@@ -1,6 +1,7 @@
 <script>
     export let searchTerm
     import { finalResults } from "./stores"
+    import { IconSearch, IconX } from '@tabler/icons-svelte';
     
     let textInput=""
 
@@ -30,15 +31,28 @@
             updateSearchTerm();
         }
         
+    
     }
+
+    function clearSearch() {
+		textInput = '';
+		updateSearchTerm();
+	}
 </script>
 
 <header>
-    <span class="logo">NSF CISE AWARDS</span>
+    <span class="logo whitespace-nowrap">NSF CISE AWARDS</span>
     <div class="search-bar">
-        <!-- <input type="text" id="searchBar" placeholder="Human-Centered Computing" bind:value = {searchTerm}> -->
-        <input type="text" id="searchBar" placeholder='e.g. "data visualization"' bind:value = {textInput} on:keydown={pressEnter}>
-        <button class="btn--search" on:click={clickSearch}>Search</button>
+        <div class="input-group input-group-divider grid-cols-[1fr_auto_auto] border border-gray-300 border-solid rounded-sm ">
+            <input type="search" placeholder="e.g. 'data visualization'" bind:value = {textInput} on:keydown={pressEnter}/>
+            <!-- <button on:click={clearSearch}>
+				<IconX />
+			</button> -->
+            <button class="variant-filled-secondary bg-yellow-400" on:click={clickSearch}>
+				<IconSearch />
+			</button>
+        </div>
+        
     </div>
     <!-- <div class="btn-group">
         <button class="btn--log-in">Log In</button>
@@ -51,7 +65,7 @@
 <style>
 
     header {
-        max-width: 70%;
+        max-width: 56rem;
         padding: 1rem 2rem;
         display: flex;
         gap:4rem;
@@ -90,7 +104,7 @@
         min-width: 160px;
 
         color: #000;
-        font-family: 'Roboto Condensed', sans-serif;
+        font-family: 'Sohne', sans-serif;
         font-size: 1.2rem;
         font-style: normal;
         font-weight: 700;

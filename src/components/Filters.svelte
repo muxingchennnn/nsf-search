@@ -49,8 +49,8 @@
     padding: 10px 20px;
     border: 1px solid #D1D1D6;
     transition: background-color 0.2s;
-    font-family: 'Merriweather', serif;
-    font-size: 0.8rem;
+    font-family: 'Sohne', sans-serif;
+    font-size: .8rem;
 }
 
 .tab.active {
@@ -66,7 +66,7 @@
     overflow: scroll;
     gap:0.2rem;
 
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Sohne', sans-serif;
     color: #424242;
     font-size: 1rem;
     font-style: normal;

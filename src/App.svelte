@@ -239,7 +239,7 @@
             {/if}
             <label class="sort-by">
                 Sort by:
-                <select bind:value={sortingMethod} class="sort-by">
+                <select bind:value={sortingMethod} class="sort-by border-gray-300 ">
                     <option value="relevance" >Relevance</option>
                     <option value="date - descending" >Date - Descending</option>
                     <option value="date - ascending">Date - Ascending</option>
@@ -308,10 +308,11 @@
 .sorting {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     
     color:#424242;
-    font-family: 'Merriweather', serif;
-    font-size: .8rem;
+    font-family: 'Sohne', sans-serif;
+    font-size: 1rem;
     font-style: normal;
     font-weight: 500;
 
@@ -330,8 +331,8 @@
 
 .sort-by{
     color: #424242;
-    font-family: 'Merriweather', serif;
-    font-size: .8rem;
+    font-family: 'Sohne', sans-serif;
+    font-size: 1rem;
     font-style: normal;
     font-weight: 400;
 }
