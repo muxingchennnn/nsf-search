@@ -47,9 +47,8 @@
 
     $: keywords = removeStopwords(parseQuery(searchTerm).includes)
     $: exclusions = parseQuery(searchTerm).excludes
-    $: {
-        $searchResults = filteredByKW(keywords, exclusions, awardsData)
-    }
+    $: $searchResults = filteredByKW(keywords, exclusions, awardsData)
+    
         
     $: filteredResults = $searchResults.filter(result => 
             ($selectedProgram.length === 0 || $selectedProgram.some(program => result.programs.includes(program))) && 
@@ -58,7 +57,7 @@
         )
         
     $: $finalResults = $searchResults.length > 0 ? sortResults(filteredResults, keywords, $selectedProgram, sortingMethod) : awardsData
-    // $: console.log(finalResults)
+    $: console.log($finalResults)
 
    
 
@@ -227,8 +226,6 @@
         <SyncLoader size="2" color="#2E90FA" unit="rem" duration="1s" />
     </div>
 {/if}
-{#await awardsData}
-{:then data}
 <main class="container">
     <section class="left-panel">
         <div class="sorting">
@@ -239,7 +236,7 @@
             {/if}
             <label class="sort-by">
                 Sort by:
-                <select bind:value={sortingMethod} class="sort-by border-gray-300 ">
+                <select bind:value={sortingMethod} class="sort-by border-gray-300">
                     <option value="relevance" >Relevance</option>
                     <option value="date - descending" >Date - Descending</option>
                     <option value="date - ascending">Date - Ascending</option>
@@ -270,7 +267,7 @@
         />
     </footer>
 {/if}
-{/await}
+
 
 
 

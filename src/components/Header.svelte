@@ -2,6 +2,11 @@
     export let searchTerm
     import { finalResults } from "./stores"
     import { IconSearch, IconX } from '@tabler/icons-svelte';
+
+    import { popup } from '@skeletonlabs/skeleton';
+    import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
+	import { storePopup } from '@skeletonlabs/skeleton';
+	storePopup.set({ computePosition, autoUpdate, flip, shift, offset, arrow });
     
     let textInput=""
 
@@ -25,32 +30,50 @@
     }
 
     function pressEnter(event) {
-        // Check if the 'return' key was pressed
-        if (event.key === "Enter") {
-            console.log("Press!")
-            updateSearchTerm();
-        }
-        
+		// Check if the 'return' key was pressed
+		if (event.key === 'Enter' || event.keyCode === 13) {
+			this.blur();
+			console.log('Press!');
+			updateSearchTerm();
+		}
+	}
     
-    }
 
     function clearSearch() {
 		textInput = '';
 		updateSearchTerm();
 	}
+
+    const popupFocusBlur = {
+		event: 'focus-blur',
+		target: 'popupFocusBlur',
+		placement: 'bottom'
+	};
 </script>
 
 <header>
     <span class="logo whitespace-nowrap">NSF CISE AWARDS</span>
     <div class="search-bar">
         <div class="input-group input-group-divider grid-cols-[1fr_auto_auto] border border-gray-300 border-solid rounded-sm ">
-            <input type="search" placeholder="e.g. 'data visualization'" bind:value = {textInput} on:keydown={pressEnter}/>
-            <!-- <button on:click={clearSearch}>
+            <input
+				type="text"
+				class="input"
+				placeholder="e.g. 'data visualization'"
+				bind:value={textInput}
+				on:keydown={pressEnter}
+				use:popup={popupFocusBlur}
+			/>
+			<button on:click={clearSearch}>
 				<IconX />
-			</button> -->
-            <button class="variant-filled-secondary bg-yellow-400" on:click={clickSearch}>
+			</button>
+			<button class="bg-yellow-400" on:click={clickSearch}>
 				<IconSearch />
 			</button>
+        </div>
+        <div class="card p-4 bg-gray-300 border-none" data-popup="popupFocusBlur">
+            <p class="block">Enclose keywords in double quotes ("") to find exact keyword collocation.</p>
+            <p class="block">Precede a keyword with a minus (-) to exclude it from results. For example, -[keyword].</p>
+            <div class="arrow bg-gray-300" />
         </div>
         
     </div>
@@ -82,6 +105,10 @@
         background-color: white;
 
 
+    }
+
+    input::selection {
+        background-color: #b3d4fc;
     }
 
     .separator {

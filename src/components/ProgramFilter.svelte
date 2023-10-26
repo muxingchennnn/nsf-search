@@ -6,6 +6,7 @@
     programOrder} from "./stores"
     import { nanoid } from 'nanoid'
     import VirtualList from '@sveltejs/svelte-virtual-list';
+    
     function handleInitialization() {
       $institutionOrderInitialized = false
       $investigatorOrderInitialized = false
@@ -22,7 +23,9 @@
     };
 
     // let programOrder = [];
-    let programDistribution =[];
+    // let programDistribution =[];
+
+    $: console.log($searchResults)
     
     $: if ($finalResults.length > 0 && $selectedInstitution.length === 0 && $selectedInvestigator.length === 0) {
       const programCounts = countPrograms($searchResults);
@@ -50,18 +53,19 @@
       $programOrderInitialized = true;
     }
 
+    $: console.log($programOrder)
     const calculateProgramDistribution = (results) => {
       const programCounts = countPrograms(results);
-
+      
       return $programOrder.map(program => ({
         program,
         count: programCounts[program] || 0
       }));
     };
 
-    $: if ($finalResults.length > 0) {
-      programDistribution = calculateProgramDistribution($finalResults);
-    }
+    $: console.log($finalResults)
+    $: programDistribution = calculateProgramDistribution($finalResults);
+    $: console.log(programDistribution)
 
     
 </script>
