@@ -1,7 +1,7 @@
 <script>
     export let searchTerm
     import { finalResults } from "./stores"
-    import { IconSearch, IconX } from '@tabler/icons-svelte';
+    import { IconSearch, IconX, IconInfoCircle } from '@tabler/icons-svelte';
 
     import { popup } from '@skeletonlabs/skeleton';
     import { computePosition, autoUpdate, flip, shift, offset, arrow } from '@floating-ui/dom';
@@ -49,16 +49,25 @@
 		target: 'popupFocusBlur',
 		placement: 'bottom'
 	};
+
+    const InfoPopup = {
+	// Represents the type of event that opens/closed the popup
+	event: 'click',
+	// Matches the data-popup value on your popup element
+	target: 'popupFeatured',
+	// Defines which side of your trigger the popup will appear
+	placement: 'bottom-end',
+};
 </script>
 
 <header>
     <span class="logo whitespace-nowrap">NSF CISE AWARDS</span>
     <div class="search-bar">
-        <div class="input-group input-group-divider grid-cols-[1fr_auto_auto] border border-gray-300 border-solid rounded-sm ">
+        <div class="input-group input-group-divider grid-cols-[1fr_auto_auto] border border-gray-300 border-solid rounded-md ">
             <input
 				type="text"
 				class="input"
-				placeholder="e.g. 'data visualization'"
+				placeholder='e.g. "data visualization"'
 				bind:value={textInput}
 				on:keydown={pressEnter}
 				use:popup={popupFocusBlur}
@@ -66,16 +75,35 @@
 			<button on:click={clearSearch}>
 				<IconX />
 			</button>
-			<button class="bg-yellow-400" on:click={clickSearch}>
+			<button class=" bg-yellow-400" on:click={clickSearch}>
 				<IconSearch />
 			</button>
+            
         </div>
-        <div class="card p-4 bg-gray-300 border-none" data-popup="popupFocusBlur">
+        
+        <!-- <div class="card p-4 bg-gray-300 border-none" data-popup="popupFocusBlur">
             <p class="block">Enclose keywords in double quotes ("") to find exact keyword collocation.</p>
             <p class="block">Precede a keyword with a minus (-) to exclude it from results. For example, -[keyword].</p>
             <div class="arrow bg-gray-300" />
-        </div>
+        </div> -->
         
+    </div>
+    <button class="info-icon" use:popup={InfoPopup}>
+        <IconInfoCircle class="stroke-gray-500"/>
+    </button>
+    <div class="card p-4 w-96 bg-gray-200 border-none rounded-md drop-shadow-sm select-text" data-popup="popupFeatured">
+        <div>
+            <p>Welcome to the NSF CISE Awards Search Interface v1!</p><br>
+            <p>We developed this interface to offer a streamlined and delightful search experience within the NSF CISE awards dataset. It is still in its early stages, and we plan to improve it over time.</p><br>
+            <p>
+                If you have any questions or suggestions, please feel free to contact us:<br>
+                Muxing Chen｜chen.muxin@northeastern.edu<br>
+                Jethro Lee ｜ lee.jet@northeastern.edu<br>
+                Shani Spivak ｜ spivak.s@northeastern.edu<br>
+                Enrico Bertini ｜ e.bertini@northeastern.edu</p>
+
+        </div>
+        <!-- <div class="arrow bg-gray-300" /> -->
     </div>
     <!-- <div class="btn-group">
         <button class="btn--log-in">Log In</button>
@@ -88,10 +116,10 @@
 <style>
 
     header {
-        max-width: 56rem;
+        max-width: 1440px;
         padding: 1rem 2rem;
         display: flex;
-        gap:4rem;
+        /* gap:4rem; */
         align-items:center;
         justify-content: space-between;
         
@@ -129,6 +157,7 @@
 
     .logo {
         min-width: 160px;
+        margin-right: 4rem;
 
         color: #000;
         font-family: 'Sohne', sans-serif;
@@ -140,84 +169,16 @@
     }
 
     .search-bar {
+        max-width: 36rem;
+        flex-grow:1;
+        margin-right: auto;
         display: flex;
         gap: 1rem;
-        flex-grow:1;
-    }
-
-    #searchBar {
-        max-width: 28rem;
-        padding: 0.625rem 0.875rem;
-        flex-grow:1;
         
-        border-radius: 0.5rem;
-        border: 1px solid var(--gray-300, #D0D5DD);
-        background: var(--base-white, #FFF);
-
-        color: #1E1E1E;
-
-        /* Text md/Regular */
-        font-family: 'Roboto', sans-serif;
-        font-size: 1rem;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 1.5rem;
     }
 
-
-    .btn--search {
-        padding: 0.625rem 1.125rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--yellow-400, #FAC515);
-        background: var(--yellow-400, #FAC515);
-
-        color: #1E1E1E;
-
-        /* Text md/Semibold */
-        font-family: 'Roboto', sans-serif;
-        font-size: 1rem;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 1.5rem; /* 150% */
+    .info-icon{
+        margin-left: auto;
     }
-
-    .btn-group{
-        display: flex;
-        flex-shrink:0;
-        gap: 1rem;
-
-    }
-
-    .btn--sign-up {
-        padding: 0.625rem 1.125rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--blue-500, #2E90FA);
-        background: var(--blue-500, #2E90FA);
-   
-
-        color: var(--base-white, #FFF);
-        /* Text md/Semibold */
-        font-family: 'Roboto', sans-serif;
-        font-size: 1rem;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 1.5rem; /* 150% */
-    }
-
-    .btn--log-in {
-        padding: 0.625rem 1.125rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--blue-500, #2E90FA);
-        background: #FFF;
-
-        color: #424242;
-        /* Text md/Semibold */
-        font-family: 'Roboto', sans-serif;
-        font-size: 1rem;
-        font-style: normal;
-        font-weight: 400;
-        line-height: 1.5rem; /* 150% */
-    }
-
 
 </style>

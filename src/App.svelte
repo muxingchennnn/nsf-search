@@ -33,7 +33,7 @@
     // })
 
     async function dataLoading() {
-        const data = await d3.csv('/dataset/IIS Awards.csv', parseData)
+        const data = await d3.csv('/dataset/cise_awards.csv', parseData)
         return data
     }
 
@@ -216,6 +216,11 @@
    
     $:console.log(isLoading)
 
+    function onPageChange(e) {
+		currentPage = e.detail.page
+		window.scrollTo(0, 0);
+	}
+
     inject();
 </script>
 <Header bind:searchTerm />
@@ -236,7 +241,7 @@
             {/if}
             <label class="sort-by">
                 Sort by:
-                <select bind:value={sortingMethod} class="sort-by border-gray-300">
+                <select bind:value={sortingMethod} class="sort-by border-gray-300 rounded-md">
                     <option value="relevance" >Relevance</option>
                     <option value="date - descending" >Date - Descending</option>
                     <option value="date - ascending">Date - Ascending</option>
@@ -263,7 +268,7 @@
         currentPage="{currentPage}"
         limit="{1}"
         showStepOptions="{true}"
-        on:setPage="{(e) => currentPage = e.detail.page}"
+        on:setPage="{onPageChange}"
         />
     </footer>
 {/if}

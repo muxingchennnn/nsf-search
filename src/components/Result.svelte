@@ -58,7 +58,7 @@
     line-height: 150%; /* 24px */
 
     margin-bottom: 0.2rem;
-    display: block;
+    display: inline-block;
     text-decoration: none;
 }
 
